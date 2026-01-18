@@ -1,0 +1,101 @@
+{% extends "base_encargado.html" %}
+{% block content %}
+
+<div class="container my-5">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h3 class="fw-bold mb-0">Detalles del Cliente</h3>
+      <small class="text-muted">Información personal y comercial</small>
+    </div>
+    <a href="{% url 'encargado:clientes_pendientes_e' %}" class="btn btn-outline-secondary">
+      ← Volver
+    </a>
+  </div>
+
+  <!-- Card principal -->
+  <div class="card shadow-sm border-0">
+    <div class="card-body p-4">
+
+      <!-- Datos personales -->
+      <h5 class="border-bottom pb-2 mb-3 text-primary">Datos personales</h5>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <p class="mb-1 text-muted">Nombre completo</p>
+          <p class="fw-semibold">
+            {{ clientes.nombre }} {{ clientes.apellido }}
+          </p>
+        </div>
+
+        <div class="col-md-6">
+          <p class="mb-1 text-muted">DNI</p>
+          <p class="fw-semibold">{{ clientes.dni }}</p>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <p class="mb-1 text-muted">Teléfono</p>
+          <p class="fw-semibold">{{ clientes.telefono }}</p>
+        </div>
+
+        <div class="col-md-6">
+          <p class="mb-1 text-muted">Dirección</p>
+          <p class="fw-semibold">{{ clientes.direccion }}</p>
+        </div>
+      </div>
+
+      <!-- Datos de usuario -->
+      <h5 class="border-bottom pb-2 mt-4 mb-3 text-primary">
+        Datos de la cuenta
+      </h5>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <p class="mb-1 text-muted">Usuario</p>
+          <p class="fw-semibold">{{ clientes.user.username }}</p>
+        </div>
+
+        <div class="col-md-6">
+          <p class="mb-1 text-muted">Correo electrónico</p>
+          <p class="fw-semibold">{{ clientes.user.email }}</p>
+        </div>
+      </div>
+
+      <!-- Datos del comercio -->
+      <h5 class="border-bottom pb-2 mt-4 mb-3 text-primary">
+        Comercio asociado
+      </h5>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <p class="mb-1 text-muted">Nombre del comercio</p>
+          <p class="fw-semibold">{{ clientes.comercio.nombre }}</p>
+        </div>
+
+        <div class="col-md-6">
+          <p class="mb-1 text-muted">CUIT</p>
+          <p class="fw-semibold">{{ clientes.comercio.cuit }}</p>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <p class="mb-1 text-muted">Dirección del comercio</p>
+          <p class="fw-semibold">{{ clientes.comercio.direccion }}</p>
+        </div>
+      </div>
+
+      <!-- Acciones -->
+      <div class="d-flex justify-content-end gap-2 mt-4">
+        <a href="javascript:history.back()" class="btn btn-secondary">
+    Volver
+</a>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,169 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% block head %}
+    {% endblock %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'encargado/css/style_encargado.css' %}">
+</head>
+
+<body>
+    <header>
+        <div class="left">
+            <div class="menu-conteiner">
+                <div class="menu" id="menu">
+                    <img src="{% static 'encargado/img/menu.png' %}" alt="menu" id="menu-icon">
+                </div>
+            </div>
+            <div class="brand">
+                <a href="" class="icon-header">
+                    <img src="{% static 'encargado/img/supercarnes.png' %}" alt="supercarnes">
+                </a>
+            </div>
+        </div>
+
+
+        <div class="right">
+            <a href="#" class="icon-header">
+                <img src="{% static 'encargado/img/buscar.svg' %}" alt="buscar" id="buscar">
+            </a>
+            <a href="#" class="icon-header">
+                <img src="{% static 'encargado/img/notificaciones.svg' %}" alt="notificaciones" id="notificaciones">
+            </a>
+        </div>
+    </header>
+    <div class="sidebar" id="sidebar">
+        <nav>
+            <ul class="nav flex-column">
+
+                <!-- Dashboard -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'encargado:home' %}">
+                        <img src="{% static 'encargado/img/menu_sidebar.png' %}">
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+
+                <!-- Pedidos -->
+                <li class="nav-item dropdown">
+                    <a data-bs-toggle="collapse" data-bs-target="#collapseWidthExample" aria-expanded="false" aria-controls="collapseWidthExample">
+                        <img src="{% static 'encargado/img/pedidos.svg' %}">
+                        <span>Pedidos</span>
+                        <img src="{% static 'encargado/img/flecha_abajo.svg' %}">
+                    </a>
+                    <ul class="collapse" id="collapseWidthExample">
+                        <li><a class="" href="#">Nuevo pedido</a></li>
+                        <li><a class="" href="{% url 'encargado:pedidos_pendientes'%}">Pendientes</a></li>
+                        <li><a class="" href="#">Entregados</a></li>
+                    </ul>
+                </li>
+
+                <!-- Viajes -->
+                <li class="nav-item dropdown">
+                    <a data-bs-toggle="collapse" data-bs-target="#ViajesExample" aria-expanded="false" aria-controls="ViajesExample">
+                        <img src="{% static 'encargado/img/viajes.svg' %}">
+                        <span>Viajes</span>
+                        <img src="{% static 'encargado/img/flecha_abajo.svg' %}">
+                    </a>
+                    <ul class="collapse" id="ViajesExample">
+                        <li><a  href="#">Nuevo viaje</a></li>
+                        <li><a href="#">Activos</a></li>
+                        <li><a href="#">Finalizados</a></li>
+                    </ul>
+                </li>
+
+                <!-- Productos -->
+                <li class="nav-item dropdown">
+                    <a data-bs-toggle="collapse" data-bs-target="#ProductosExample" aria-expanded="false" aria-controls="ProductosExample">
+                        <img src="{% static 'encargado/img/stock.svg' %}">
+                        <span>Productos</span>
+                        <img src="{% static 'encargado/img/flecha_abajo.svg' %}">
+                    </a>
+                    <ul class="collapse" id="ProductosExample">
+                        <li><a  href="{% url 'encargado:entrada'%}">Entradas</a></li>
+                        <li><a  href="{% url 'encargado:stock'%}">Stock</a></li>
+
+                    </ul>
+                </li>
+
+                <!-- Clientes -->
+                <li class="nav-item dropdown">
+                    <a data-bs-toggle="collapse" data-bs-target="#ClientesExample" aria-expanded="false" aria-controls="ClientesExample">
+                        <img src="{% static 'encargado/img/personas.png' %}">
+                        <span>Clientes</span>
+                        <img src="{% static 'encargado/img/flecha_abajo.svg' %}">
+                    </a>
+                    <ul class="collapse" id="ClientesExample">
+                        <li><a href="{% url 'encargado:clientes'%}">Actuales </a></li>
+                        <li><a href="{% url 'encargado:clientes_pendientes_e' %}">Pendientes</a></li>
+                    </ul>
+                </li>
+                
+            
+
+                <!-- Administración -->
+                <li class="nav-item dropdown">
+                    <a data-bs-toggle="collapse" data-bs-target="#AdministracionExample" aria-expanded="false" aria-controls="AdministracionExample">
+                        <img src="{% static 'encargado/img/apoyo.png' %}">
+                        <span>Administración</span>
+                        <img src="{% static 'encargado/img/flecha_abajo.svg' %}">
+                    </a>
+                    <ul class="collapse" id="AdministracionExample">
+                        <li><a href="{% url 'administrador:empleados' %}">Empleados</a></li>
+                        <li><a href="{% url 'administrador:camiones' %}">Camiones</a></li>
+                    </ul>
+                </li>
+
+                <!-- Reportes -->
+                <li class="nav-item dropdown">
+                    <a data-bs-toggle="collapse" data-bs-target="#ReportesExample" aria-expanded="false" aria-controls="ReportesExample">
+                        <img src="{% static 'encargado/img/grafico-de-barras.png' %}">
+                        <span>Reportes</span>
+                        <img src="{% static 'encargado/img/flecha_abajo.svg' %}">
+                    </a>
+                    <ul class="collapse" id="ReportesExample">
+                        <li><a  href="{% url 'administrador:empleados' %}">Empleados</a></li>
+                        <li><a  href="{% url 'administrador:camiones' %}">Camiones</a></li>
+                    </ul>
+                </li>
+
+                <!-- Configuracion -->
+                <li class="nav-item dropdown">
+                    <a data-bs-toggle="collapse" data-bs-target="#ConfiguracionExample" aria-expanded="false" aria-controls="ConfiguracionExample">
+                        <img src="{% static 'encargado/img/engranaje.png' %}">
+                        <span>Configuracion</span>
+                        <img src="{% static 'encargado/img/flecha_abajo.svg' %}">
+                    </a>
+                    <ul class="collapse" id="ConfiguracionExample">
+                        <li><a  href="">Idioma</a></li>
+                        <li><a  href="{% url 'logout' %}">Cerrar sesion</a></li>
+                    </ul>
+                </li>
+
+                <!-- Soporte -->
+                <li class="nav-item dropdown">
+                    <a>
+                        <img src="{% static 'encargado/img/centro-de-llamadas.png' %}">
+                        <span>Soporte</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <div class="main" id="main">
+        {% block content %}
+
+        {% endblock %}
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <script src="{% static 'encargado/js/script.js' %}"></script>
+    
+
+</body>
+
+</html>

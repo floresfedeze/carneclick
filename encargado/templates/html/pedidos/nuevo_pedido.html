@@ -1,0 +1,38 @@
+{% extends "base_encargado.html" %}
+{% load static %}
+
+{% block head %}
+<title> Encargado </title>
+<link rel="stylesheet" href="{% static 'encargado/css/nuevo_pedido.css' %}">
+{% endblock %}
+{% block content %}
+
+<div class="formulario">
+    <form method="post">
+
+        <h2>Nuevo Pedido</h2>
+        <div id="productos-lista">
+            <div class="producto-item">
+                <label>ID de Producto:</label>
+                <input type="number" class="producto_id" name="producto_id[]" min="1" required autocomplete="off">
+                <label>Cantidad:</label>
+                <input type="number" class="cantidad" name="cantidad[]" min="1" value="1" readonly required>
+                <button type="button" class="eliminar-producto" style="display:none">Eliminar</button>
+                <div class="producto-info" style="margin-top:10px; font-size:0.95em;"></div>
+            </div>
+        </div>
+        <button type="button" id="agregar-producto">Agregar otro producto</button>
+        <div>
+            <label for="observaciones">Observaciones:</label>
+            <textarea id="observaciones" name="observaciones" rows="3"></textarea>
+        </div>
+        <div>
+            <button type="submit">Realizar Pedido</button>
+        </div>
+
+
+    </form>
+</div>
+
+
+{% endblock %}

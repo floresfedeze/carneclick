@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block head %}
+<title>Iniciar Sesion</title>
+<link rel="stylesheet" href="{%static 'css/style_login.css'%}">
+{% endblock %}
+{% block content %}
+<div class="login-container">
+    <form method="POST">
+        {% csrf_token %}
+        <img src="{%static 'img/supercarnes.png'%}" alt="Logo">
+        <label for="usuario">Nombre de usuario o correo electronico</label>
+        <input type="text" id="usuario" name="usuario" required>
+        <div class="constraseña_olvidada">
+            <label>Contraseña</label> <a href=""> ¿Has olvidado tu Contraseña?</a>
+        </div>
+        <input type="contraseña" id="contraseña" name="contraseña" required>
+        <button type="submit">Iniciar sesion</button>
+        <p>¿No tienes una cuenta? <a href="/register/">Registrate</a></p>
+        {{error}}
+    </form>
+    <div class="pie">
+        <a href="">Terminos</a>
+        <a href="">Privacidad</a>
+        <a href="">Documentacion</a>
+        <a href="">Contactar con el soporte de CarneClick</a>
+    </div>
+</div>
+{% if messages %}
+    {% for message in messages %}
+      <script>
+        Swal.fire({
+        title: "{% if 'success' in message.tags %}Éxito{% elif 'warning' in message.tags %}Advertencia{% else %}Error{% endif %}",
+        text: "{{ message|escapejs }}",
+        icon: "{% if 'success' in message.tags %}success{% elif 'warning' in message.tags %}warning{% else %}error{% endif %}"
+        });
+        </script>
+    {% endfor %}
+
+{% endif %}
+{% endblock %}
+
+</html>

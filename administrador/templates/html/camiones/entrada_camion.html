@@ -1,0 +1,22 @@
+{% extends "base_encargado.html" %}
+{% load static %}
+
+{% block head %}
+<title> Nuevo Camion </title>
+{% endblock %}
+{% block content %}
+<div class="container bg-light p-3 rounded border-end">
+    <h2>Ingresa los datos del nuevo camion</h2>
+    <form 
+        id="camionForm"
+        novalidate
+        action="{% url 'administrador:entrada_camion' %}" 
+        method="post">
+        {% csrf_token %}
+        {{ form }}
+        <input type="submit" name="accion" value="Guardar" class="btn btn-primary">
+        <input type="button" value="Cancelar" class="btn btn-danger" onclick="window.location.href='{% url 'administrador:camiones' %}'">
+    </form>
+
+</div>
+{% endblock %}

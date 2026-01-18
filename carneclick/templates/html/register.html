@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block head %}
+<title>Registro</title>
+<link rel="stylesheet" href="{%static 'css/style_register.css'%}">
+{% endblock %}
+{% block content %}
+<div class="register_page">
+    <div class="left_register">
+        <img src="{%static 'img/fondo_carne.png'%}" alt="Logo" class="register-logo">
+        <div class="overlay"></div>
+        <div class="register-contenedor">
+            <img src="{%static 'img/supercarnes.png'%}" alt="Logo" class="register-logo1">
+            <h1>Bienvenido al area de Cliente</h1>
+            <p>Ingresá tus datos y enviá la solicitud. Te vamos a notificar por email cuando el administrador
+                apruebe tu registro. Mientras tanto, no podrás acceder a las funciones de cliente.</p>
+            <div class="condiciones">
+                <p>Al registrarte, aceptas nuestras <a href="#">condiciones de servicio</a>.</p>
+            </div>
+        </div>
+
+    </div>
+    <div class="right_register">
+        <div class="register-box">
+            <form class="registerform" id="registerForm" method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <br>
+                </div>
+                <div class="form-group">
+                    <h2>Registrate en Carneclick </h2><br>
+                </div>
+                <div class="form-group">
+                    <label for="email">Correo electronico </label> <br>
+                    <input type="text" id="email" name="email" required placeholder="Ingresa tu email">
+                </div>
+                <div class="form-group">
+                    <label for="username">Usuario</label><br>
+                    <input type="text" id="username" name="username" required placeholder="Ingresa tu usuario">
+                    <p>
+                        El nombre de usuario sólo puede contener caracteres alfanuméricos o guiones simples, y no
+                        puede comenzar ni terminar con un guion.
+                    </p>
+                </div>
+                <div class="form-group">
+                    <label for="password">Contraseña</label><br>
+                    <input type="password" id="password" name="password" required placeholder="Ingresa tu contraseña">
+                    <p>La contraseña debe tener al menos 8 caracteres, incluido un número y
+                        una letra mayuscula.</p>
+                </div>
+                <div class="form-group">
+                    <label for="password2">Confirmar contraseña</label><br>
+                    <input type="password" id="password2" name="password2" required
+                        placeholder="Confirma tu contraseña">
+                </div>
+                <div style="color: red;"">{{error}}</div>
+                <button class=" btn" type="submit">Crear una cuenta</button>
+                    <p class="login-link"> Ya tienes una cuenta? <a href="/">Inicia sesión</a></p>
+            </form>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+</html>

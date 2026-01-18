@@ -1,0 +1,109 @@
+{% extends "base_encargado.html" %}
+{% block content %}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">
+            <i class="bi bi-clipboard-check me-2"></i>
+            Pedidos pendientes
+        </h2>
+        <span class="badge bg-warning text-dark fs-6">
+            {{ pedidos|length }} pendientes
+        </span>
+    </div>
+
+    {% if pedidos %}
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle shadow-sm">
+            <thead class="table-dark text-center">
+                <tr>
+                    <th>#</th>
+                    <th>Cliente</th>
+                    <th>Fecha</th>
+                    <th>Detalle</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pedido in pedidos %}
+                <tr>
+                    <td class="text-center fw-bold">
+                        {{ pedido.id }}
+                    </td>
+
+                    <td>
+                        <div class="fw-semibold d-flex align-items-cente r">
+                            <span>{{ pedido.cliente.username }}</span>
+                            <a href="{% url 'encargado:ver_detalles_clientes' pedido.cliente.id %}" class="btn btn-primary ms-auto mt-1">
+                            <i class="bi bi-eye"></i> Ver detalles
+                        </a>
+                        </div>
+                        <small class="text-muted ">
+                            {{ pedido.cliente.email }} 
+                        </small>
+                        
+                    </td>
+
+                    <td class="text-center">
+                        {{ pedido.fecha|date:"d/m/Y H:i" }}
+                    </td>
+
+                    <td>
+                        <ul class="list-unstyled mb-0">
+                            {% for item in pedido.items.all %}
+                            <li>
+                                <i class="bi bi-dot"></i>
+                                {{ item.corte.nombre }} —
+                                <strong>{{ item.cantidad }}</strong>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+
+                    <td class="text-center">
+                        <span class="badge bg-warning text-dark">
+                            {{ pedido.estado|capfirst }}
+                        </span>
+                    </td>
+
+                    <td class="text-center">
+                        <a href="{% url 'encargado:iniciar_pedido' pedido.id %}"
+                           class="btn btn-sm btn-primary mb-1 ">
+                            Iniciar el pedido
+                        </a>
+
+                        <a href=""
+                           class="btn btn-sm btn-success mb-1 ">
+                            Rechazar el pedido
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% else %}
+    <div class="alert alert-success text-center shadow-sm">
+        <i class="bi bi-check-circle fs-4"></i>
+        <p class="mb-0 mt-2 fw-semibold">
+            No hay pedidos pendientes
+        </p>
+    </div>
+    {% endif %}
+</div>
+<!-- MENSAJES SWEETALERT -->
+ <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{% if messages %}
+    {% for message in messages %}
+    <script>
+        Swal.fire({
+            title: "{% if 'success' in message.tags %}Éxito{% elif 'warning' in message.tags %}Advertencia{% else %}Error{% endif %}",
+            text: "{{ message|escapejs }}",
+            icon: "{% if 'success' in message.tags %}success{% elif 'warning' in message.tags %}warning{% else %}error{% endif %}"
+        });
+    </script>
+    {% endfor %}
+{% endif %}
+{% endblock %}

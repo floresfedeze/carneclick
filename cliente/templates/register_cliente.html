@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block head %}
+<title>Registro</title>
+<link rel="stylesheet" href="{%static 'css/style_register.css'%}">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+
+{% endblock %}
+{% block content %}
+<div class="register_page">
+    <div class="left_register">
+        <img src="{%static 'img/fondo_carne.png'%}" alt="Logo" class="register-logo">
+        <div class="overlay"></div>
+        <div class="register-contenedor">
+            <img src="{%static 'img/supercarnes.png'%}" alt="Logo" class="register-logo1">
+            <h1>Bienvenido al area de Cliente</h1>
+            <p>Ingresá tus datos y enviá la solicitud. Te vamos a notificar por email cuando el administrador
+                apruebe tu registro. Mientras tanto, no podrás acceder a las funciones de cliente.</p>
+            <div class="condiciones">
+                <p>Al registrarte, aceptas nuestras <a href="#">condiciones de servicio</a>.</p>
+            </div>
+        </div>
+    </div>
+    <div class="right_register">
+        <div>
+            <div >
+                <h2>Datos personales</h2>
+                <form 
+                    id="clienteForm"
+                    novalidate
+                    action="{% url 'cliente:register_cliente' %}" 
+                    method="post">
+                    {% csrf_token %}
+                    {{ form }}
+                    <input type="submit" name="accion" value="Guardar y terminar" class="btn btn-primary">
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+
+{% endblock %}
+

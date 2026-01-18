@@ -1,0 +1,152 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&family=Tektur:wght@400..900&display=swap');
+
+:root {
+    --background-color: #151515;
+    --prymary-color: #F7DA24;
+    --secondary-color: #151515;
+    --text-color: #000000;
+    --border-color: #ffffff;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Roboto", sans-serif;
+
+
+}
+
+body {
+    background-color: var(--background-color);
+}
+
+.login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    gap: 4rem;
+}
+
+.login-container form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    background-color: var(--secondary-color);
+    padding: 2rem;
+    border-radius: 8px;
+
+}
+
+.login-container h1 {
+    color: white;
+}
+
+.login-container label {
+    color: white;
+    font-size: 14px;
+
+}
+
+.login-container input {
+    border: 1px solid var(--border-color);
+    padding: 0.5rem;
+    border-radius: 4px;
+    width: 100%;
+    background-color: #222;
+    /* Fondo oscuro */
+    color: white;
+}
+
+.login-container button {
+    background-color: var(--prymary-color);
+    color: var(--text-color);
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.login-container button:hover {
+    background-color: var(--border-color);
+}
+
+.login-container .constraseña_olvidada {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    align-items: center;
+
+    a {
+        color: var(--prymary-color);
+        text-decoration: none;
+    }
+
+}
+
+
+
+
+.login-container p {
+    color: white;
+    font-size: 11px;
+
+    a {
+        color: var(--prymary-color);
+
+    }
+
+}
+
+.pie {
+    background-color: rgb(29, 29, 29);
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    height: 20px;
+    text-align: center;
+    padding: 1rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4rem;
+
+    a {
+        color: rgba(255, 255, 255, 0.411);
+        font-size: 12px;
+        text-decoration: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .login-container {
+        gap: 2rem;
+        padding: 1rem;
+    }
+
+    .login-container img {
+        max-width: 280px;
+        align-self: center;
+        height: auto;
+    }
+
+    .login-container form {
+        width: 100%;
+        padding: 1rem;
+
+
+    }
+
+    .login-container button {
+        width: 100%;
+    }
+
+    .pie {
+        flex-direction: column;
+        height: auto;
+        gap: 1rem;
+        padding: 0.5rem;
+    }
+}

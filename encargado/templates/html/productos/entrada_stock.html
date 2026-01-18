@@ -1,0 +1,87 @@
+{% extends "base_encargado.html" %}
+{% load static %}
+
+{% block head %}
+<title> Entrada de Stock </title>
+<link rel="stylesheet" href="{% static 'encargado/css/entrada_stock.css' %}">
+{% endblock %}
+{% block content %}
+<div class="container ">
+    <div class="row align-items-start">
+        <div class="col bg-light p-3 rounded border-end">
+            <h2>Agregar Producto</h2>
+            <form 
+                id="productoForm"
+                novalidate
+                action="{% url 'encargado:entrada_stock' %}" 
+                method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="entrada_proveedor">Proveedor de la entrada</label>
+                    <select name="entrada_proveedor" id="entrada_proveedor" class="form-control">
+                        <option value="">-- Seleccionar proveedor --</option>
+                        {% for prov in proveedores %}
+                            <option value="{{ prov.id }}" {% if entrada_actual.proveedor_id == prov.id %}selected{% endif %}>{{ prov.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {{ form }}
+                <input type="submit" name="accion" value="Agregar otro producto" class="btn btn-primary">
+                
+                <input type="submit" name="ticket" value="Generar ticket" class="btn btn-success" onclick="return generarTicketYVolver();">
+                <input type="submit" name="accion" value="Guardar y terminar" class="btn btn btn-danger">
+                <a href="{% url 'encargado:finalizar_entrada' %}" class="btn btn-danger">Finalizar</a>
+            </form>
+        </div>
+        <div class="col bg-light p-3 rounded border-start">
+            <h3>Productos de la entrada ({{ productos_agregados|length }})</h3>
+            {% if productos_agregados %}
+                <table class="table table-sm table-striped">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Kilos</th>
+
+                            <th>Vencimiento</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in productos_agregados %}
+                            <tr>
+                                <td>{{ p.nombre }}</td>
+                                <td>{{ p.kilos }}</td>
+
+                                <td>{{ p.fecha_vencimineto|date:"d/m/Y" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p class="text-muted">Todavía no se agregaron productos.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function generarTicketYVolver() {
+    // Crear un iframe temporal para enviar el formulario y abrir el PDF en nueva pestaña
+    const form = document.getElementById('productoForm');
+    const originalTarget = form.target;
+    
+    // Enviar en nueva pestaña
+    form.target = '_blank';
+    
+    // Enviar el formulario
+    setTimeout(() => {
+        // Después de enviar, esperar 1 segundo y volver a esta página
+        setTimeout(() => {
+            form.target = originalTarget;
+        }, 500);
+    }, 100);
+    
+    return true;
+}
+</script>
+
+{% endblock %}

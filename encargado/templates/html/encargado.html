@@ -1,0 +1,39 @@
+{% extends "base_encargado.html" %}
+{% load static %}
+
+{% block head %}
+<title> Encargado </title>
+{% endblock %}
+{% block content %}
+<div class="menu_encargado">
+    <h2>Bienvenido al inicio de Encargado</h2>
+    <!-- Métricas clave -->
+    <section class="metrics">
+        <article class="metric-card warning">
+            <div class="metric-label">Pedidos pendientes</div>
+            <div class="metric-value">100</div>
+            <div class="metric-sub">+12 hoy</div>
+        </article>
+        <article class="metric-card">
+            <div class="metric-label">Stock disponible</div>
+            <div class="metric-value">1500 kg</div>
+            <div class="metric-sub">-80 kg últimos 7 días</div>
+        </article>
+        <article class="metric-card">
+            <div class="metric-label">Empleados activos</div>
+            <div class="metric-value">25</div>
+            <div class="metric-sub">3 ausentes</div>
+        </article>
+        <article class="metric-card">
+            <div class="metric-label">Tiempo prom. de entrega</div>
+            <div class="metric-value">1h 45m</div>
+            <div class="metric-sub">SLA 2h</div>
+        </article>
+    </section>
+</div>
+<!-- informes -->
+
+
+
+
+{% endblock %}

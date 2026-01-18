@@ -1,0 +1,73 @@
+{% extends "cliente.html" %}
+{% block content %}
+
+<div class="container mt-3">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Mi carrito</h2>
+        <span class="badge bg-dark">
+            {{ carrito.total_items }} productos
+        </span>
+    </div>
+
+    <!-- 🖥️ DESKTOP -->
+    <div class="d-none d-md-block">
+        <table class="table table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Corte</th>
+                    <th class="text-center">Cantidad</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in carrito.items.all %}
+                <tr>
+                    <td>{{ item.corte.nombre }}</td>
+                    <td class="text-center">{{ item.cantidad }}</td>
+                    <td class="text-center">
+                        <a href="{% url 'cliente:agregar_carrito' item.corte.id %}"
+                           class="btn btn-success btn-sm">+</a>
+                        <a href="{% url 'cliente:restar_carrito' item.id %}"
+                           class="btn btn-warning btn-sm">−</a>
+                        <a href="{% url 'cliente:quitar_carrito' item.id %}"
+                           class="btn btn-danger btn-sm">Eliminar</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 📱 MOBILE -->
+    <div class="d-md-none">
+        {% for item in carrito.items.all %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5>{{ item.corte.nombre }}</h5>
+                <p>Cantidad: <strong>{{ item.cantidad }}</strong></p>
+
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'cliente:agregar_carrito' item.corte.id %}"
+                       class="btn btn-success">+</a>
+                    <a href="{% url 'cliente:restar_carrito' item.id %}"
+                       class="btn btn-warning">−</a>
+                    <a href="{% url 'cliente:quitar_carrito' item.id %}"
+                       class="btn btn-danger">Eliminar</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-center">El carrito está vacío</p>
+        {% endfor %}
+    </div>
+
+    {% if carrito.items.exists %}
+    <div class="d-grid mt-3">
+        <a href="{% url 'cliente:confirmar_pedido' %}"class="btn btn-dark btn-lg">Confirmar pedido</a>
+    </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}

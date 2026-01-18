@@ -1,0 +1,133 @@
+{% extends "base_encargado.html" %}
+{% load static %}
+
+{% block head %}
+<title> Encargado </title>
+<link rel="stylesheet" href="{% static 'encargado/css/stock.css' %}">
+{% endblock %}
+{% block content %}
+<div class="menu_encargado">
+    <div class="main-header">
+        <div class="table-header">
+            <h2>Stock de Productos</h2>
+
+            <div class="filters">
+                <select id="fieldSelect">
+                    <option value="all">Filtrar por</option>
+                    <option value="0">ID</option>
+                    <option value="1">Nombre</option>
+                    <option value="2">Kilos</option>
+                    <option value="3">Cámara</option>
+                </select>
+
+                <input type="text" id="tableSearch" placeholder="Buscar...">
+            </div>
+        </div>
+        <a href="entrada_stock" class="btn btn-primary mb-3">Agregar una entrada</a>
+        <button id="generarTicketBtn" class="btn btn-secondary mb-3" onclick="generarTicket()">Generar ticket</button>
+    </div>
+    <table class="table" id="stockTable">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Corte</th>
+                <th>Kilos</th>
+                <th>Cámara</th>
+                <th>Fecha de entrada</th>
+                <th>Fecha de vencimiento</th>
+                <th>Opciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for producto in productos %}
+            <tr data-id="{{ producto.id }}">
+                <th data-label="ID">{{ producto.id }}</th>
+                <td data-label="Nombre">{{ producto.nombre }}</td>
+                <td data-label="Kilos">{{ producto.kilos }} kg</td>
+                </td>
+                <td data-label="Cámara">{{ producto.frigorificop }}</td>
+                <td data-label="Fecha de entrada">{{ producto.fecha_entrada.fecha|date:"d/m/Y"}}</td>
+                <td data-label="Vencimiento">
+    {{ producto.fecha_vencimiento|date:"d/m/Y" }}
+</td>
+                <td data-label="Opciones">
+                    <a href="{% url 'encargado:editar_producto' producto.id %}"><img src="{% static 'encargado/img/editar.png' %}" alt="editar"></a>
+                    <a href="{% url 'encargado:eliminar_producto' producto.id %}"><img src="{% static 'encargado/img/eliminar.png' %}" alt="eliminar"></a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="report">
+
+</div>
+
+<style>
+#stockTable tbody tr {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+#stockTable tbody tr:hover {
+    background-color: rgba(26,188,156,0.08);
+}
+
+#stockTable tbody tr.selected {
+    background-color: rgba(26,188,156,0.25);
+    border-left: 4px solid #1abc9c;
+    font-weight: 500;
+}
+</style>
+
+<script>
+    const searchInput = document.getElementById("tableSearch");
+    const fieldSelect = document.getElementById("fieldSelect");
+    const rows = document.querySelectorAll("#stockTable tbody tr");
+    let selectedProductId = null;
+
+    // Hacer filas seleccionables
+    rows.forEach(row => {
+        row.addEventListener('click', () => {
+            // quitar seleccion de otras filas
+            rows.forEach(r => r.classList.remove('selected'))
+            row.classList.add('selected')
+            selectedProductId = row.getAttribute('data-id')
+        })
+    })
+
+    function filterTable() {
+        const searchValue = searchInput.value.toLowerCase();
+        const selectedField = fieldSelect.value;
+
+        rows.forEach(row => {
+            const cells = row.querySelectorAll("th, td");
+            let textToSearch = "";
+
+            if (selectedField === "all") {
+                textToSearch = row.innerText.toLowerCase();
+            } else {
+                const index = parseInt(selectedField);
+                textToSearch = cells[index].innerText.toLowerCase();
+            }
+
+            row.style.display = textToSearch.includes(searchValue) ? "" : "none";
+        });
+    }
+
+    searchInput.addEventListener("keyup", filterTable);
+    fieldSelect.addEventListener("change", filterTable);
+
+    function generarTicket() {
+        if (!selectedProductId) {
+            alert('Seleccione un producto en la tabla antes de generar el ticket.');
+            return;
+        }
+        const url = `/encargado/stock/generar_ticket/${selectedProductId}/`;
+        window.open(url, '_blank');
+    }
+</script>
+
+
+{% endblock %}

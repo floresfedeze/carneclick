@@ -1,0 +1,95 @@
+{% extends "cliente.html" %}
+{% block content %}
+
+<div class="container mt-3">
+
+    <h2 class="mb-3">Nuevo pedido</h2>
+
+    <input
+        type="text"
+        id="buscadorCortes"
+        class="form-control mb-3"
+        placeholder="Buscar corte...">
+
+    <!-- 🖥️ VISTA DESKTOP -->
+    <div class="d-none d-md-block">
+        <table class="table table-hover" id="tablaCortes">
+            <thead class="table-dark">
+                <tr>
+                    <th>Corte</th>
+                    <th>Stock</th>
+                    <th>Cantidad</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for corte in cortes %}
+                <tr>
+                    <td class="nombre-corte">{{ corte.nombre }}</td>
+                    <td>{{ corte.stock }}</td>
+                    <td>
+                        <form method="post" action="{% url 'cliente:agregar_carrito' corte.id %}">
+                            {% csrf_token %}
+                            <input type="number" name="cantidad" min="1"
+                                   max="{{ corte.stock }}" value="1"
+                                   class="form-control" style="width:90px">
+                    </td>
+                    <td>
+                            <button class="btn btn-primary btn-sm">Agregar</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 📱 VISTA MOBILE -->
+    <div class="d-md-none">
+        {% for corte in cortes %}
+        <div class="card mb-3 corte-card">
+            <div class="card-body">
+                <h5 class="card-title nombre-corte">{{ corte.nombre }}</h5>
+                <p class="mb-2">
+                    Stock:
+                    {% if corte.stock > 0 %}
+                        <span class="badge bg-success">{{ corte.stock }}</span>
+                    {% else %}
+                        <span class="badge bg-danger">Sin stock</span>
+                    {% endif %}
+                </p>
+
+                <form method="post" action="{% url 'cliente:agregar_carrito' corte.id %}">
+                    {% csrf_token %}
+                    <div class="d-flex gap-2">
+                        <input type="number" name="cantidad" min="1"
+                               max="{{ corte.stock }}" value="1"
+                               class="form-control"
+                               {% if corte.stock == 0 %}disabled{% endif %}>
+                        <button class="btn btn-primary"
+                                {% if corte.stock == 0 %}disabled{% endif %}>
+                            Agregar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+<script>
+document.getElementById("buscadorCortes").addEventListener("keyup", function () {
+    let filtro = this.value.toLowerCase();
+
+    document.querySelectorAll(".nombre-corte").forEach(el => {
+        let card = el.closest("tr") || el.closest(".corte-card");
+        card.style.display = el.textContent.toLowerCase().includes(filtro)
+            ? ""
+            : "none";
+    });
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base_encargado.html" %}
+{% load static %}
+
+{% block head %}
+<title>Confirmar eliminación</title>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Eliminar Camion #{{ camion.id }}</h2>
+    <p>¿Seguro que quieres eliminar el camion <strong>{{ camion.marca }}</strong> con dominio {{ camion.dominio }} ?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Eliminar</button>
+        <a href="{% url 'administrador:camiones' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

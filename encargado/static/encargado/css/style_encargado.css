@@ -1,0 +1,297 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&family=Tektur:wght@400..900&display=swap');
+
+/* ================= VARIABLES ================= */
+:root {
+    --background-color: #ffffff;
+    --prymary-color: #F7DA24;
+    --secondary-color: #151515;
+    --text-color: #000000;
+    --border-color: #ffffff;
+}
+
+/* ================= RESET ================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Roboto", sans-serif;
+}
+
+/* ================= BODY ================= */
+body {
+    width: 100%;
+    min-height: 100vh;
+    background-color: rgb(221, 221, 221);
+}
+
+/* ================= HEADER ================= */
+header {
+    background-color: var(--secondary-color);
+    width: 100%;
+    z-index: 200;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.7rem 1rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3rem;
+    box-shadow: 0 0.1rem 0.1rem rgba(0, 0, 0, 0.1);
+}
+
+.left {
+    display: flex;
+}
+
+.menu-conteiner {
+    cursor: pointer;
+}
+
+.menu {
+    margin-top: 10px;
+    width: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.menu div {
+    width: 100%;
+    height: 0.1rem;
+    background-color: #fff;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+}
+
+.brand img {
+    width: clamp(8rem, 20vw, 12rem);
+    margin-left: 0.5rem;
+}
+
+.right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.right img {
+    width: 1.5rem;
+}
+
+.right a:hover {
+    color: var(--prymary-color);
+    transition: all 0.3s ease;
+}
+
+/* ================= SIDEBAR ================= */
+.sidebar {
+    margin-top: 3rem;
+    width: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    overflow-y: auto;
+    padding: 1.1rem 0;
+    z-index: 150;
+    background-color: var(--secondary-color);
+    transition: width 0.3s ease;
+}
+
+.sidebar.menu-open {
+    width: 18.75rem;
+}
+
+.sidebar nav ul {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar nav ul li {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Links */
+.sidebar a {
+    color: #fff !important;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.7rem 1.5rem !important;
+    border-radius: 0.75rem;
+    transition: background-color 0.25s ease, padding-left 0.25s ease;
+    font-size: 15px;
+}
+
+.sidebar span {
+    color: var(--prymary-color);
+}
+
+.sidebar a:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    padding-left: 2rem;
+}
+
+.sidebar img {
+    width: 1.5rem;
+}
+
+/* ================= BOOTSTRAP DROPDOWNS ================= */
+.sidebar .dropdown-menu {
+    background-color: rgba(0, 0, 0, 0.3) !important;
+    border: none !important;
+    margin-left: 1rem !important;
+    margin-top: 0.25rem !important;
+    display: none !important;
+}
+
+.sidebar .dropdown-menu.show {
+    display: block !important;
+}
+
+.sidebar .dropdown-item {
+    color: #fff !important;
+    padding: 0.5rem 1rem !important;
+    font-size: 0.85rem;
+}
+
+.sidebar .dropdown-item:hover {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    color: #fff !important;
+}
+
+.sidebar .dropdown-item.active {
+    background-color: var(--prymary-color) !important;
+    color: #000 !important;
+}
+
+
+/* ================= ACTIVE ================= */
+.sidebar a.active {
+    background-color: var(--prymary-color);
+    color: #000;
+}
+
+.sidebar a.active span {
+    color: #000;
+}
+
+.sidebar a.active img {
+    filter: brightness(0);
+}
+
+/* ================= SIDEBAR CLOSED ================= */
+.sidebar:not(.menu-open) span {
+    display: none;
+}
+
+.sidebar:not(.menu-open) a {
+    justify-content: center;
+}
+
+.sidebar:not(.menu-open) .arrow,
+.sidebar:not(.menu-open) .submenu {
+    display: none !important;
+}
+
+/* ================= MAIN ================= */
+.main {
+    margin-top: 3.5rem;
+    margin-left: 0;
+    padding: 1rem 2rem;
+    min-height: 100vh;
+    background-color: rgb(221, 221, 221);
+    transition: margin-left 0.3s ease;
+}
+
+.sidebar.menu-open~.main {
+    margin-left: 18.75rem;
+}
+
+/* ================= METRICS ================= */
+.metrics {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(4, minmax(150px, 1fr));
+    margin-top: 1rem;
+}
+
+.metric-card {
+    background: #fff;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.metric-card.warning {
+    background-color: #fff3cd;
+}
+
+.metric-label {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.metric-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.metric-sub {
+    font-size: 0.8rem;
+    color: #e74c3c;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 640px) {
+    .brand img {
+        width: 8rem;
+    }
+
+    .right img {
+        width: 1rem;
+    }
+
+    .sidebar.menu-open {
+        width: 100%;
+    }
+
+    .main {
+        padding: 0.75rem 1rem;
+    }
+
+    .metrics {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+    .sidebar.menu-open {
+        width: 15rem;
+    }
+
+    .sidebar.menu-open~.main {
+        margin-left: 15rem;
+    }
+
+    .metrics {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1025px) {
+    .metrics {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}

@@ -1,0 +1,18 @@
+{% extends "base_encargado.html" %}
+{% load static %}
+
+{% block head %}
+<title>Confirmar eliminación</title>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Eliminar Producto #{{ producto.id }}</h2>
+    <p>¿Seguro que quieres eliminar el producto <strong>{{ producto.nombre }}</strong> ({{ producto.kilos }} kg)?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Eliminar</button>
+        <a href="{% url 'encargado:stock' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

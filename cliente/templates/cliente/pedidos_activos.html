@@ -1,0 +1,38 @@
+{% extends "cliente.html" %}
+{% block content %}
+
+<div class="container mt-3">
+
+    <h2 class="mb-3">Pedidos activos</h2>
+
+    {% for pedido in pedidos %}
+    <div class="card mb-3">
+        <div class="card-header d-flex justify-content-between">
+            <strong>Pedido #{{ pedido.id }}</strong>
+            <span class="badge bg-primary">{{ pedido.get_estado_display }}</span>
+        </div>
+
+        <div class="card-body">
+            <p class="mb-2">
+                Fecha: {{ pedido.fecha|date:"d/m/Y H:i" }}
+            </p>
+
+            <ul class="list-group">
+                {% for item in pedido.items.all %}
+                <li class="list-group-item d-flex justify-content-between">
+                    {{ item.corte.nombre }}
+                    <span class="badge bg-dark">
+                        x{{ item.cantidad }}
+                    </span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% empty %}
+    <p>No tenés pedidos activos.</p>
+    {% endfor %}
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,126 @@
+{% extends "base_encargado.html" %}
+{% load static %}
+
+{% block head %}
+<title> Empleados </title>
+<link rel="stylesheet" href="{% static 'encargado/css/stock.css' %}">
+{% endblock %}
+{% block content %}
+<div class="menu_encargado">
+    <div class="main-header">
+        <div class="table-header">
+            <h2>Empleados</h2>
+
+            <div class="filters">
+                <select id="fieldSelect">
+                    <option value="all">Filtrar por</option>
+                    <option value="0">ID</option>
+                    <option value="1">Nombre</option>
+                    <option value="2">Apellido</option>
+                    <option value="3">DNI</option>
+                    <option value="6">Disponibilidad</option>
+                    <option value="7">Rol</option>
+                </select>
+
+                <input type="text" id="tableSearch" placeholder="Buscar...">
+            </div>
+        </div>
+        <a href="entrada_empleado" class="btn btn-primary mb-3">Agregar un nuevo empleado</a>
+    </div>
+    <table class="table" id="stockTable">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Apelido</th>
+                <th>DNI</th>
+                <th>Direccion</th>
+                <th>Telefono</th>
+                <th>Disponibilidad</th>
+                <th>Rol</th>
+                <th>Opciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for empleado in empleados %}
+            <tr data-id="{{ empleado.id }}">
+                <th data-label="ID">{{ empleado.id }}</th>
+                <td data-label="Nombre">{{ empleado.nombre }}</td>
+                <td data-label="Apellido">{{ empleado.apellido }}</td>
+                <td data-label="DNI">{{ empleado.dni }}</td>
+                <td data-label="Direccion">{{ empleado.direccion }}</td>
+                <td data-label="Telefono">{{ empleado.telefono }}</td>
+                <td data-label="Disponibilidad">{{ empleado.disponibilidad }}</td>
+                <td data-label="Rol_empleado">{{ empleado.rol_empleado }}</td>
+                <td data-label="Opciones">
+                    <a href="{% url 'administrador:editar_empleado' empleado.id %}"><img src="{% static 'encargado/img/editar.png' %}" alt="editar"></a>
+                    <a href="{% url 'administrador:eliminar_empleado' empleado.id %}"><img src="{% static 'encargado/img/eliminar.png' %}" alt="eliminar"></a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="report">
+
+</div>
+
+<style>
+#stockTable tbody tr {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+#stockTable tbody tr:hover {
+    background-color: rgba(26,188,156,0.08);
+}
+
+#stockTable tbody tr.selected {
+    background-color: rgba(26,188,156,0.25);
+    border-left: 4px solid #1abc9c;
+    font-weight: 500;
+}
+</style>
+
+<script>
+    const searchInput = document.getElementById("tableSearch");
+    const fieldSelect = document.getElementById("fieldSelect");
+    const rows = document.querySelectorAll("#stockTable tbody tr");
+    let selectedEmpleadoId = null;
+
+    // Hacer filas seleccionables
+    rows.forEach(row => {
+        row.addEventListener('click', () => {
+            // quitar seleccion de otras filas
+            rows.forEach(r => r.classList.remove('selected'))
+            row.classList.add('selected')
+            selectedEmpleadoId = row.getAttribute('data-id')
+        })
+    })
+
+    function filterTable() {
+        const searchValue = searchInput.value.toLowerCase();
+        const selectedField = fieldSelect.value;
+
+        rows.forEach(row => {
+            const cells = row.querySelectorAll("th, td");
+            let textToSearch = "";
+
+            if (selectedField === "all") {
+                textToSearch = row.innerText.toLowerCase();
+            } else {
+                const index = parseInt(selectedField);
+                textToSearch = cells[index].innerText.toLowerCase();
+            }
+
+            row.style.display = textToSearch.includes(searchValue) ? "" : "none";
+        });
+    }
+
+    searchInput.addEventListener("keyup", filterTable);
+    fieldSelect.addEventListener("change", filterTable);
+</script>
+
+
+{% endblock %}

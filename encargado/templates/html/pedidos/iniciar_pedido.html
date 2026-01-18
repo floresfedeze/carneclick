@@ -1,0 +1,168 @@
+{% extends "base_encargado.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4 bg-light p-4 border">
+
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-1">Iniciar pedido</h4>
+            <span class="text-muted">
+                Cliente: {{ cliente.nombre }} {{ cliente.apellido }}
+            </span>
+        </div>
+
+        <span class="badge bg-primary fs-6">
+            Pedido #{{ pedido.id }}
+        </span>
+    </div>
+
+    <!-- DATOS DE SUCURSALES -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light fw-semibold">
+            Información de sucursales
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">
+                        Sucursal origen
+                    </label>
+                   <select class="form-control"> <option value="">-- Seleccionar Comercio --</option> {% for comercio in comercios %} <option value="{{ comercio.id }}">{{ comercio.nombre }}</option> {% endfor %} </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">
+                        Sucursal destino
+                    </label>
+                    <select class="form-control"> <option value="{{ cliente.id }}">{{ cliente.comercio.nombre }}</option> </select>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- INGRESO DE PRODUCTO -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light fw-semibold">
+            Agregar producto por ID
+        </div>
+        <div class="card-body">
+            <form method="post"
+                  action="{% url 'encargado:agregar_producto_por_id' pedido.id %}"
+                  class="row g-3 align-items-center">
+                {% csrf_token %}
+
+                <div class="col-md-4">
+                    <input type="number"
+                           name="producto_id"
+                           class="form-control form-control-lg"
+                           placeholder="Ingrese ID del producto"
+                           autofocus
+                           required
+                           onkeydown="if(event.key==='Enter'){ this.form.submit(); }">
+                </div>
+
+                <div class="col-md-2">
+                    <button class="btn btn-success btn-lg w-100">
+                        Agregar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- LISTADO DE PRODUCTOS -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-light fw-semibold">
+            Productos agregados
+        </div>
+        <div class="card-body p-0">
+
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="width: 10%">ID</th>
+                        <th>Producto</th>
+                        <th style="width: 15%">Kilos</th>
+                        <th style="width: 10%" class="text-center">
+                            Acción
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for item in pedido.detallepedido_set.all %}
+                    <tr>
+                        <td class="fw-semibold">
+                            {{ item.producto_id.id }}
+                        </td>
+                        <td>
+                            {{ item.producto_id.nombre }}
+                        </td>
+                        <td>
+                            {{ item.producto_id.kilos }}
+                        </td>
+                        <td class="text-center">
+                            <a href="{% url 'encargado:eliminar_producto_pedido' item.id %}"
+                               class="btn btn-sm btn-outline-danger"
+                               title="Eliminar producto"
+                               onclick="return confirm('¿Eliminar este producto del pedido?');">
+                                <i class="bi bi-trash"></i> ❌
+                            </a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-4">
+                            No hay productos agregados
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+    <!-- BOTONES FINALES -->
+    <div class="d-flex justify-content-between mt-4">
+        <a href="{% url 'encargado:cancelar_pedido' pedido.id %}"
+           class="btn btn-danger"
+           onclick="return confirm('¿Seguro que querés cancelar el pedido?');">
+            Cancelar pedido
+        </a>
+        <div class="d-flex justify-content-row gap-3">
+            <a href="{% url 'encargado:boleta_pedido' pedido.id %}"
+   class="btn btn-primary" target="_blank">Generar boleta
+</a>
+            <button class="btn btn-success ">
+                Finalizar pedido
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<!-- MENSAJES SWEETALERT -->
+ <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{% if messages %}
+    {% for message in messages %}
+    <script>
+        Swal.fire({
+            title: "{% if 'success' in message.tags %}Éxito{% elif 'warning' in message.tags %}Advertencia{% else %}Error{% endif %}",
+            text: "{{ message|escapejs }}",
+            icon: "{% if 'success' in message.tags %}success{% elif 'warning' in message.tags %}warning{% else %}error{% endif %}"
+        });
+    </script>
+    {% endfor %}
+{% endif %}
+
+<script>
+document.querySelector('input[name="producto_id"]').addEventListener('focus', function () {
+    this.value = '';
+});
+</script>
+
+{% endblock %}
