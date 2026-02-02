@@ -1,0 +1,57 @@
+{% extends "base_encargado.html" %}
+{% load static %}
+
+{% block head %}
+<title>Detalle de entrada</title>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h2 class="mb-0">Entrada #{{ entrada.id }}</h2>
+      <small class="text-muted">Fecha: {{ entrada.fecha|date:"d/m/Y H:i" }} • Proveedor: {{ entrada.proveedor|default:"-" }}{% if entrada.numero_lote %} • Lote: {{ entrada.numero_lote }}{% endif %}</small>
+    </div>
+    <div class="d-flex gap-2">
+      <a class="btn btn-outline-secondary" href="{% url 'encargado:entrada' %}">Volver</a>
+      <a class="btn btn-primary" target="_blank" href="{% url 'encargado:generar_ticket_entrada' entrada.id %}">Generar Boleta</a>
+    </div>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="text-muted small">Total items: {{ total_items }} • Total kilos: {{ total_kilos }}</div>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th style="width: 10%">Código</th>
+              <th>Descripción</th>
+              <th style="width: 12%">Kilos</th>
+              <th style="width: 20%">Frigorífico</th>
+              <th style="width: 15%">Temperatura</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in productos %}
+            <tr>
+              <td>{{ p.codigo|default:"P"|add:p.id|stringformat:"06d" }}</td>
+              <td>{{ p.nombre }}</td>
+              <td>{{ p.kilos }}</td>
+              <td>{{ p.frigorificop }}</td>
+              <td>{{ p.temperatura }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="text-center text-muted py-4">No hay productos cargados en esta entrada.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

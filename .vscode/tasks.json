@@ -1,0 +1,23 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Django makemigrations + migrate",
+			"type": "shell",
+			"command": "\"D:/Keke/IPET/2do año/Practica Profesional/Final/Proyecto final/carneclick/venv/Scripts/python.exe\"",
+			"args": [
+				"manage.py",
+				"makemigrations",
+				"encargado",
+				"cliente",
+				"administrador",
+				";",
+				"\"D:/Keke/IPET/2do año/Practica Profesional/Final/Proyecto final/carneclick/venv/Scripts/python.exe\"",
+				"manage.py",
+				"migrate"
+			],
+			"problemMatcher": [],
+			"group": "build"
+		}
+	]
+}

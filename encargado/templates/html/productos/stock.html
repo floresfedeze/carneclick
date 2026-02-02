@@ -9,18 +9,22 @@
 <div class="menu_encargado">
     <div class="main-header">
         <div class="table-header">
-            <h2>Stock de Productos</h2>
+            <h2>{{ ui.Stock }} - {{ ui.Products }}</h2>
 
             <div class="filters">
                 <select id="fieldSelect">
-                    <option value="all">Filtrar por</option>
+                    <option value="all">{{ ui.FilterBy }}</option>
                     <option value="0">ID</option>
-                    <option value="1">Nombre</option>
-                    <option value="2">Kilos</option>
-                    <option value="3">Cámara</option>
+                    <option value="1">Código</option>
+                    <option value="2">Nombre</option>
+                    <option value="3">Kilos</option>
+                    <option value="4">Reservado</option>
+                    <option value="5">Disponible</option>
+                    <option value="6">Cámara</option>
+                    <option value="7">Lote</option>
                 </select>
 
-                <input type="text" id="tableSearch" placeholder="Buscar...">
+                <input type="text" id="tableSearch" placeholder="{{ ui.Search }}">
             </div>
         </div>
         <a href="entrada_stock" class="btn btn-primary mb-3">Agregar una entrada</a>
@@ -30,9 +34,14 @@
         <thead class="table-dark">
             <tr>
                 <th>ID</th>
+                <th>Código</th>
                 <th>Corte</th>
                 <th>Kilos</th>
+                <th>Reservado</th>
+                <th>Disponible</th>
                 <th>Cámara</th>
+                <th>Lote</th>
+                <th>Estado</th>
                 <th>Fecha de entrada</th>
                 <th>Fecha de vencimiento</th>
                 <th>Opciones</th>
@@ -42,10 +51,19 @@
             {% for producto in productos %}
             <tr data-id="{{ producto.id }}">
                 <th data-label="ID">{{ producto.id }}</th>
+                <td data-label="Código">{{ producto.codigo }}</td>
                 <td data-label="Nombre">{{ producto.nombre }}</td>
                 <td data-label="Kilos">{{ producto.kilos }} kg</td>
+                <td data-label="Reservado">{{ producto.reserved_kilos|default:0 }} kg</td>
+                <td data-label="Disponible">{{ producto.available_kilos|floatformat:2 }} kg</td>
                 </td>
                 <td data-label="Cámara">{{ producto.frigorificop }}</td>
+                <td data-label="Lote">
+                    {{ producto.fecha_entrada.numero_lote|default:"-" }}
+                </td>
+                                
+                <td data-label="Estado">{{ producto.estado }}</td>
+
                 <td data-label="Fecha de entrada">{{ producto.fecha_entrada.fecha|date:"d/m/Y"}}</td>
                 <td data-label="Vencimiento">
     {{ producto.fecha_vencimiento|date:"d/m/Y" }}

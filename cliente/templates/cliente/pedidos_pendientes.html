@@ -1,0 +1,69 @@
+{% extends "cliente.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid my-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="fw-bold mb-0">Pedidos pendientes</h3>
+    <span class="badge bg-warning text-dark">{{ pedidos|length }} pendientes</span>
+  </div>
+
+  {% if pedidos %}
+    <!-- Tabla para pantallas medianas y grandes -->
+    <div class="table-responsive shadow-sm rounded bg-white p-3 d-none d-md-block">
+      <table class="table table-hover align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th>#</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th>Detalle</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for p in pedidos %}
+          <tr>
+            <td>{{ p.id }}</td>
+            <td>{{ p.fecha|date:"d/m/Y H:i" }}</td>
+            <td><span class="badge bg-warning text-dark">Pendiente</span></td>
+            <td>
+              <ul class="mb-0">
+                {% for item in p.items.all %}
+                  <li>{{ item.corte.nombre }} — <strong>{{ item.cantidad }}</strong></li>
+                {% endfor %}
+              </ul>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Tarjetas para pantallas pequeñas -->
+    <div class="d-md-none">
+      <div class="row g-3">
+        {% for p in pedidos %}
+        <div class="col-12">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="mb-0">Pedido #{{ p.id }}</h6>
+                <span class="badge bg-warning text-dark">Pendiente</span>
+              </div>
+              <div class="text-muted mb-2">{{ p.fecha|date:"d/m/Y H:i" }}</div>
+              <ul class="mb-0 small">
+                {% for item in p.items.all %}
+                  <li>{{ item.corte.nombre }} — <strong>{{ item.cantidad }}</strong></li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% else %}
+    <div class="alert alert-info">No tenés pedidos pendientes.</div>
+  {% endif %}
+</div>
+{% endblock %}

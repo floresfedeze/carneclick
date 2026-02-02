@@ -30,6 +30,7 @@ body {
     gap: 4rem;
 }
 
+
 .login-container form {
     display: flex;
     flex-direction: column;
@@ -37,6 +38,8 @@ body {
     background-color: var(--secondary-color);
     padding: 2rem;
     border-radius: 8px;
+    width: 100%;
+    max-width: 380px;
 
 }
 
@@ -86,9 +89,6 @@ body {
 
 }
 
-
-
-
 .login-container p {
     color: white;
     font-size: 11px;
@@ -127,13 +127,14 @@ body {
     }
 
     .login-container img {
-        max-width: 280px;
+        width: 180px;
         align-self: center;
         height: auto;
     }
 
     .login-container form {
         width: 100%;
+        max-width: 360px;
         padding: 1rem;
 
 

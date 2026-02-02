@@ -1,0 +1,87 @@
+{% extends 'base_encargado.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Gestionar viaje #{{ viaje.id }}</h2>
+    <div>
+      <a href="{% url 'encargado:iniciar_viaje' viaje.id %}" class="btn btn-success">Iniciar viaje</a>
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-3"><strong>Fecha:</strong> {{ viaje.fecha|date:"d/m/Y H:i" }}</div>
+        <div class="col-md-3"><strong>Chofer:</strong> {{ viaje.chofer }}</div>
+        <div class="col-md-3"><strong>Ayudante:</strong> {{ viaje.ayudante }}</div>
+        <div class="col-md-3"><strong>Camión:</strong> {{ viaje.camion_viaje }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header">Agregar desde pedido pendiente</div>
+    <div class="card-body">
+      <form method="post" action="{% url 'encargado:agregar_pedido_desde_pendiente' viaje.id %}">
+        {% csrf_token %}
+        <div class="row g-3 align-items-end">
+          <div class="col-md-6">{{ form_pendiente.pedido_pendiente.label_tag }} {{ form_pendiente.pedido_pendiente }}</div>
+          <div class="col-md-6"><button type="submit" class="btn btn-primary">Agregar</button></div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header">Crear pedido manual</div>
+    <div class="card-body">
+      <form method="post" action="{% url 'encargado:agregar_pedido_manual_a_viaje' viaje.id %}">
+        {% csrf_token %}
+        <div class="row g-3">
+          <div class="col-md-4">{{ form_manual.cliente.label_tag }} {{ form_manual.cliente }}</div>
+          <div class="col-md-4">{{ form_manual.comercio_origen.label_tag }} {{ form_manual.comercio_origen }}</div>
+          <div class="col-md-4">{{ form_manual.observaciones.label_tag }} {{ form_manual.observaciones }}</div>
+        </div>
+        <button type="submit" class="btn btn-secondary mt-3">Crear y agregar</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header">Pedidos del viaje</div>
+    <div class="card-body p-0">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Cliente</th>
+            <th>Destino</th>
+            <th>Estado</th>
+            <th>Items</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for p in pedidos %}
+          <tr>
+            <td>#{{ p.id }}</td>
+            <td>{{ p.cliente.nombre }} {{ p.cliente.apellido }}</td>
+            <td>{{ p.cliente.comercio.nombre }}</td>
+            <td><span class="badge bg-secondary">{{ p.estado.estado }}</span></td>
+            <td>{{ p.detallepedido_set.count }}</td>
+            <td>
+              <a href="{% url 'encargado:editar_pedido_preparado' p.id %}" class="btn btn-sm btn-outline-primary">Editar</a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6" class="text-center py-3">Sin pedidos aún</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

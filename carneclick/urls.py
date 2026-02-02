@@ -23,6 +23,7 @@ urlpatterns = [
     path('', views.login_view, name='login_view'),
     path('register/', views.register, name='register'),
     path('logout/', views.CerrarSesion, name='logout'),
+    path('set-language/', views.set_language, name='set_language'),
     path('encargado/', include('encargado.urls')),
     path('admin/', admin.site.urls),
     path('administrador/', include('administrador.urls')),

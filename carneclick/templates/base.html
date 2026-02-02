@@ -10,6 +10,17 @@
 
 <body>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    {% if messages %}
+    {% for message in messages %}
+    <script>
+        Swal.fire({
+            title: "{% if 'success' in message.tags %}Éxito{% elif 'warning' in message.tags %}Advertencia{% else %}Error{% endif %}",
+            text: "{{ message|escapejs }}",
+            icon: "{% if 'success' in message.tags %}success{% elif 'warning' in message.tags %}warning{% else %}error{% endif %}"
+        });
+    </script>
+    {% endfor %}
+    {% endif %}
     {% block content %}
     {% endblock %}
 

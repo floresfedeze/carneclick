@@ -1,0 +1,55 @@
+{% extends "base_encargado.html" %}
+{% load static %}
+
+{% block head %}
+<title> Cortes </title>
+<link rel="stylesheet" href="{% static 'encargado/css/stock.css' %}">
+{% endblock %}
+{% block content %}
+<div class="menu_encargado">
+  <div class="main-header">
+    <div class="table-header">
+      <h2>{{ ui.Cuts }}</h2>
+      <div class="filters">
+        <input type="text" id="tableSearch" placeholder="{{ ui.SearchByName }}">
+      </div>
+    </div>
+    <a href="{% url 'administrador:entrada_corte' %}" class="btn btn-primary mb-3">Agregar un nuevo corte</a>
+  </div>
+  <table class="table" id="cortesTable">
+    <thead class="table-dark">
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Opciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in cortes %}
+      <tr>
+        <td data-label="ID">{{ c.id }}</td>
+        <td data-label="Nombre">{{ c.nombre }}</td>
+        <td data-label="Opciones">
+          <a href="{% url 'administrador:editar_corte' c.id %}"><img src="{% static 'encargado/img/editar.png' %}" alt="editar"></a>
+          <a href="{% url 'administrador:eliminar_corte' c.id %}"><img src="{% static 'encargado/img/eliminar.png' %}" alt="eliminar"></a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="3" class="text-center py-3">No hay cortes cargados</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<script>
+  const searchInput = document.getElementById("tableSearch");
+  const rows = document.querySelectorAll("#cortesTable tbody tr");
+  function filterTable(){
+    const q = searchInput.value.toLowerCase();
+    rows.forEach(row => {
+      const name = row.children[1].innerText.toLowerCase();
+      row.style.display = name.includes(q) ? '' : 'none';
+    });
+  }
+  searchInput.addEventListener('keyup', filterTable);
+</script>
+{% endblock %}

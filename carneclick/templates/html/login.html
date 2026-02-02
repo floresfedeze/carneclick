@@ -9,7 +9,7 @@
 <div class="login-container">
     <form method="POST">
         {% csrf_token %}
-        <img src="{%static 'img/supercarnes.png'%}" alt="Logo">
+        <img src="{%static 'img/supercarnes1 (1).png'%}" >
         <label for="usuario">Nombre de usuario o correo electronico</label>
         <input type="text" id="usuario" name="usuario" required>
         <div class="constraseña_olvidada">
@@ -27,18 +27,7 @@
         <a href="">Contactar con el soporte de CarneClick</a>
     </div>
 </div>
-{% if messages %}
-    {% for message in messages %}
-      <script>
-        Swal.fire({
-        title: "{% if 'success' in message.tags %}Éxito{% elif 'warning' in message.tags %}Advertencia{% else %}Error{% endif %}",
-        text: "{{ message|escapejs }}",
-        icon: "{% if 'success' in message.tags %}success{% elif 'warning' in message.tags %}warning{% else %}error{% endif %}"
-        });
-        </script>
-    {% endfor %}
-
-{% endif %}
+{# Mensajes ahora se muestran desde base.html con SweetAlert #}
 {% endblock %}
 
 </html>

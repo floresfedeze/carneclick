@@ -1,0 +1,61 @@
+{% extends "cliente.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container my-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="fw-bold">Pedidos Finalizados</h3>
+
+  </div>
+  {% if pedidos %}
+    <!-- Tabla para pantallas medianas y grandes -->
+    <div class="table-responsive shadow-sm rounded bg-white p-3 d-none d-md-block">
+      <table class="table table-hover align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th style="width:80px;">#</th>
+            <th>Destino</th>
+            <th style="width:180px;">Fecha</th>
+            <th style="width:120px;">Estado</th>
+            <th style="width:120px;">Productos</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in pedidos %}
+            <tr>
+              <td>{{ p.id }}</td>
+              <td>{{ p.cliente.comercio.nombre }}</td>
+              <td>{{ p.creado_en|date:"d/m/Y H:i" }}</td>
+              <td><span class="badge bg-success">Entregado</span></td>
+              <td>{{ p.detallepedido_set.count }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Tarjetas para pantallas pequeñas -->
+    <div class="d-md-none">
+      <div class="row g-3">
+        {% for p in pedidos %}
+        <div class="col-12">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="mb-0">Pedido #{{ p.id }}</h6>
+                <span class="badge bg-success">Entregado</span>
+              </div>
+              <div class="small text-muted mb-2">{{ p.creado_en|date:"d/m/Y H:i" }}</div>
+              <div class="mb-2"><strong>Destino:</strong> {{ p.cliente.comercio.nombre }}</div>
+              <div class="mb-0"><strong>Productos:</strong> {{ p.detallepedido_set.count }}</div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% else %}
+    <div class="alert alert-info">No hay entregas registradas.</div>
+  {% endif %}
+</div>
+{% endblock %}

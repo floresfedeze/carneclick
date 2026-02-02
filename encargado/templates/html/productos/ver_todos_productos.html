@@ -1,0 +1,192 @@
+{% extends "base_encargado.html" %}
+{% load static %}
+
+{% block head %}
+<title>Todos los Productos</title>
+<link rel="stylesheet" href="{% static 'encargado/css/stock.css' %}">
+<style>
+  /* Estado colors */
+  /* Aumentar contraste para mejor visibilidad */
+  .row-stock { background: rgba(26, 188, 156, 0.22); }
+  .row-deviaje { background: rgba(54, 162, 235, 0.20); }
+  .row-preparado { background: rgba(255, 193, 7, 0.30); }
+  .row-entregado { background: rgba(220, 53, 69, 0.22); }
+  .badge { display:inline-block; padding:.15rem .45rem; border-radius:10px; font-size:.75rem; }
+  /* Badges con mayor contraste */
+  .badge-green { background:#1abc9c; color:#ffffff; }
+  .badge-yellow { background:#ffb300; color:#000000; }
+  .badge-red { background:#dc3545; color:#ffffff; }
+  .badge-blue { background:#1f63d1; color:#ffffff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="menu_encargado">
+  <div class="main-header">
+    <div class="table-header">
+      <h2>{{ ui.ViewAll }} - {{ ui.Products }}</h2>
+      <div class="filters">
+        <select id="fieldSelect">
+          <option value="all">{{ ui.FilterBy }}</option>
+          <option value="0">ID</option>
+          <option value="1">Nombre</option>
+          <option value="2">Kilos</option>
+          <option value="3">Cámara</option>
+        </select>
+        <input type="text" id="tableSearch" placeholder="{{ ui.Search }}">
+      </div>
+    </div>
+
+    <div class="d-flex align-items-center gap-3 mb-3">
+      
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" value="en stock" id="chkStock" checked>
+        <label class="form-check-label" for="chkStock">En stock</label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" value="preparado" id="chkPreparado" checked>
+        <label class="form-check-label" for="chkPreparado">Preparado</label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" value="entregado" id="chkEntregado" checked>
+        <label class="form-check-label" for="chkEntregado">Entregado</label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" value="de viaje" id="chkDeViaje" checked>
+        <label class="form-check-label" for="chkDeViaje">De viaje</label>
+      </div>
+    </div>
+    <div class="d-flex gap-2 mb-3">
+      <button id="generarTicketBtn" class="btn btn-secondary" onclick="generarTicket()">Generar ticket</button>
+    </div>
+  </div>
+
+  <table class="table" id="allProductsTable">
+    <thead class="table-dark">
+      <tr>
+        <th>ID</th>
+        <th>Corte</th>
+        <th>Kilos</th>
+        <th>Cámara</th>
+        <th>Estado</th>
+        <th>Fecha de entrada</th>
+        <th>Fecha de vencimiento</th>
+        <th>Opciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for producto in productos %}
+        {% with estado=producto.estado %}
+        <tr data-id="{{ producto.id }}" data-estado="{{ estado }}"
+          class="{% if estado == 'en stock' %}row-stock{% elif estado == 'preparado' %}row-preparado{% elif estado == 'de viaje' %}row-deviaje{% elif estado == 'entregado' %}row-entregado{% endif %}">
+        <th data-label="ID">{{ producto.id }}</th>
+        <td data-label="Nombre">{{ producto.nombre }}</td>
+        <td data-label="Kilos">{{ producto.kilos }} kg</td>
+        <td data-label="Cámara">{{ producto.frigorificop }}</td>
+        <td data-label="Estado">
+          {% if estado == 'en stock' %}
+            <span class="badge badge-green">{{ estado }}</span>
+          {% elif estado == 'preparado' %}
+            <span class="badge badge-yellow">{{ estado }}</span>
+          {% elif estado == 'de viaje' %}
+            <span class="badge badge-blue">{{ estado }}</span>
+          {% elif estado == 'entregado' %}
+            <span class="badge badge-red">{{ estado }}</span>
+          {% else %}
+            {{ estado }}
+          {% endif %}
+        </td>
+        <td data-label="Fecha de entrada">{{ producto.fecha_entrada.fecha|date:"d/m/Y"}}</td>
+        <td data-label="Vencimiento">{{ producto.fecha_vencimiento|date:"d/m/Y" }}</td>
+        <td data-label="Opciones">
+          <a href="{% url 'encargado:ver_producto' producto.id %}"><img src="{% static 'encargado/img/vision.png' %}" alt="vision"></a>
+          <a href="{% url 'encargado:editar_producto' producto.id %}"><img src="{% static 'encargado/img/editar.png' %}" alt="editar"></a>
+          <a href="{% url 'encargado:eliminar_producto' producto.id %}"><img src="{% static 'encargado/img/eliminar.png' %}" alt="eliminar"></a>
+        </td>
+      </tr>
+      {% endwith %}
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+  <style>
+  #allProductsTable tbody tr {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+
+  #allProductsTable tbody tr:hover {
+    background-color: rgba(26,188,156,0.08);
+  }
+
+  #allProductsTable tbody tr.selected {
+    background-color: rgba(26,188,156,0.25);
+    border-left: 4px solid #1abc9c;
+    font-weight: 500;
+  }
+  </style>
+
+<script>
+  const searchInput = document.getElementById("tableSearch");
+  const fieldSelect = document.getElementById("fieldSelect");
+  const rows = document.querySelectorAll("#allProductsTable tbody tr");
+  const chkStock = document.getElementById("chkStock");
+  const chkPreparado = document.getElementById("chkPreparado");
+  const chkEntregado = document.getElementById("chkEntregado");
+  const chkDeViaje = document.getElementById("chkDeViaje");
+
+  function filterTable() {
+    const searchValue = searchInput.value.toLowerCase();
+    const selectedField = fieldSelect.value;
+
+    rows.forEach(row => {
+      const estado = row.getAttribute('data-estado');
+      const showByEstado = (
+        (chkStock.checked && estado === 'en stock') ||
+        (chkPreparado.checked && estado === 'preparado') ||
+        (chkDeViaje && chkDeViaje.checked && estado === 'de viaje') ||
+        (chkEntregado.checked && estado === 'entregado') ||
+        (!['en stock','preparado','de viaje','entregado'].includes(estado))
+      );
+
+      const cells = row.querySelectorAll("th, td");
+      let textToSearch = "";
+      if (selectedField === "all") {
+        textToSearch = row.innerText.toLowerCase();
+      } else {
+        const index = parseInt(selectedField);
+        textToSearch = cells[index].innerText.toLowerCase();
+      }
+      const showBySearch = textToSearch.includes(searchValue);
+      row.style.display = (showByEstado && showBySearch) ? "" : "none";
+    });
+  }
+
+  searchInput.addEventListener("keyup", filterTable);
+  fieldSelect.addEventListener("change", filterTable);
+  chkStock.addEventListener("change", filterTable);
+  chkPreparado.addEventListener("change", filterTable);
+  chkEntregado.addEventListener("change", filterTable);
+  if (chkDeViaje) chkDeViaje.addEventListener("change", filterTable);
+
+  // Selección de fila para generar ticket
+  let selectedProductId = null;
+  rows.forEach(row => {
+    row.addEventListener('click', () => {
+      rows.forEach(r => r.classList.remove('selected'));
+      row.classList.add('selected');
+      selectedProductId = row.getAttribute('data-id');
+    });
+  });
+
+  function generarTicket() {
+    if (!selectedProductId) {
+      alert('Seleccione un producto en la tabla antes de generar el ticket.');
+      return;
+    }
+    const url = `/encargado/stock/generar_ticket/${selectedProductId}/`;
+    window.open(url, '_blank');
+  }
+</script>
+{% endblock %}

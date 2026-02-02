@@ -1,0 +1,64 @@
+{% extends "base_encargado.html" %}
+{% load static %}
+
+{% block head %}
+<title>Pedidos entregados</title>
+<link rel="stylesheet" href="{% static 'encargado/css/stock.css' %}">
+<style>
+  .filters .form-select, .filters .form-control { max-width: 260px; }
+  #stockTable tbody tr { cursor: pointer; transition: background-color .2s ease; }
+  #stockTable tbody tr:hover { background-color: rgba(26,188,156,0.08); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="menu_encargado">
+  <div class="main-header">
+    <div class="table-header">
+      <h2>{{ ui.Orders }} - {{ ui.Delivered }}</h2>
+      <form class="filters d-flex gap-2" method="get">
+        <select class="form-select" name="comercio" aria-label="{{ ui.FilterBy }}">
+          <option value="">{{ ui.AllCommerces }}</option>
+          {% for c in comercios %}
+            <option value="{{ c.comercio_id }}" {% if comercio_id == c.comercio_id %}selected{% endif %}>{{ c.comercio__nombre }}</option>
+          {% endfor %}
+        </select>
+        <input type="text" class="form-control" name="q" placeholder="{{ ui.Search }}" value="{{ q }}">
+        <button class="btn btn-primary" type="submit">{{ ui.Apply }}</button>
+        <a class="btn btn-outline-secondary" href="{% url 'encargado:pedidos_entregados' %}">{{ ui.Clear }}</a>
+      </form>
+    </div>
+  </div>
+
+  <table class="table" id="stockTable">
+    <thead class="table-dark">
+      <tr>
+        <th>ID</th>
+        <th>Sucursal de origen</th>
+        <th>Cliente</th>
+        <th>Fecha creación</th>
+        <th>Observaciones</th>
+        <th>Estado</th>
+        <th>Opciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for pedido in pedidos %}
+      <tr>
+        <th data-label="ID">{{ pedido.id }}</th>
+        <td data-label="Sucursal de origen">{{ pedido.comercio_origen|default:"-" }}</td>
+        <td data-label="Cliente">{{ pedido.cliente.comercio.nombre }}</td>
+        <td data-label="Fecha creación">{{ pedido.creado_en|date:"d/m/Y H:i" }}</td>
+        <td data-label="Observaciones">{{ pedido.observaciones|default:"-" }}</td>
+        <td data-label="Estado"><span class="badge bg-success">{{ pedido.estado.estado|capfirst }}</span></td>
+        <td data-label="Opciones">
+          <a href="{% url 'encargado:detalles_pedido_preparado' pedido.id %}" class="btn btn-sm btn-outline-primary">Detalles</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" class="text-center py-3">No hay pedidos entregados</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

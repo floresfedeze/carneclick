@@ -1,0 +1,217 @@
+{% extends 'base_encargado.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Reporte de stock</h2>
+     <div class="d-flex gap-2"></div>
+  </div>
+
+  <form method="get" class="card mb-3 shadow-sm">
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-3">
+          <label class="form-label">Estado</label>
+          <select class="form-select" name="estado">
+            <option value="">Todos</option>
+            <option value="en stock" {% if estado_sel == 'en stock' %}selected{% endif %}>En stock</option>
+            <option value="preparado" {% if estado_sel == 'preparado' %}selected{% endif %}>Preparado</option>
+            <option value="de viaje" {% if estado_sel == 'de viaje' %}selected{% endif %}>De viaje</option>
+            <option value="entregado" {% if estado_sel == 'entregado' %}selected{% endif %}>Entregado</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Corte</label>
+          <select class="form-select" name="corte">
+            <option value="">Todos</option>
+            {% for c in cortes %}
+              <option value="{{ c.id }}" {% if c.id == corte_sel %}selected{% endif %}>{{ c.nombre }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Frigorífico</label>
+          <select class="form-select" name="frigorifico">
+            <option value="">Todos</option>
+            {% for f in frigorificos %}
+              <option value="{{ f.id }}" {% if f.id == frigorifico_sel %}selected{% endif %}>{{ f.nombre }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3 d-flex align-items-end gap-2">
+          <button class="btn btn-primary flex-grow-1" type="submit">Aplicar filtros</button>
+          <a class="btn btn-outline-secondary" href="?">Limpiar</a>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <div class="table-responsive">
+    <table class="table table-striped table-hover align-middle" id="tablaStock">
+      <thead>
+        <tr>
+          <th>Corte</th>
+          <th>Estado</th>
+          <th>Cantidad</th>
+          <th>Kilos</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in resumen %}
+          <tr>
+            <td>{{ r.nombre__nombre }}</td>
+            <td>{{ r.estado|capfirst }}</td>
+            <td>{{ r.total }}</td>
+            <td>{{ r.kilos|floatformat:2 }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="4" class="text-center py-3">Sin resultados</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card mt-3">
+    <div class="card-body">
+      <h5 class="card-title">Kilos por corte</h5>
+      <div id="stockChart" style="height:300px;"></div>
+    </div>
+  </div>
+
+  <div class="card mt-3">
+    <div class="card-body">
+      <h5 class="card-title">Cantidad de productos por corte</h5>
+      <div id="corteCountChart" style="height:320px;"></div>
+    </div>
+  </div>
+
+  <div class="card mt-3">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Capacidad y ocupación por cámara</h5>
+        <small class="text-muted">Alerta si ocupación &lt; 30% o &lt; 3 productos</small>
+      </div>
+      <div class="table-responsive mt-3">
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>Cámara</th>
+              <th>Capacidad (productos)</th>
+              <th>En stock (productos)</th>
+              <th>Ocupación</th>
+              <th>Kilos</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for f in frigo_resumen %}
+            <tr>
+              <td>{{ f.nombre }}</td>
+              <td>{{ f.capacidad|floatformat:0 }}</td>
+              <td>{{ f.productos }}</td>
+              <td>{{ f.ocupacion_pct }}%</td>
+              <td>{{ f.kilos|floatformat:2 }}</td>
+              <td>
+                {% if f.low_stock %}
+                  <span class="badge bg-warning text-dark">Falta stock</span>
+                {% else %}
+                  <span class="badge bg-success">OK</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div id="capacidadChart" style="height:320px;"></div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<script>
+  (function(){
+    // Kilos por corte (bar)
+    const rows = document.querySelectorAll('#tablaStock tbody tr');
+    const map = new Map();
+    rows.forEach(tr => {
+      const corte = tr.children[0]?.textContent?.trim();
+      const kilos = parseFloat(tr.children[3]?.textContent?.trim() || '0');
+      if (corte) map.set(corte, (map.get(corte) || 0) + kilos);
+    });
+    const labels = Array.from(map.keys());
+    const data = Array.from(map.values());
+    const el1 = document.getElementById('stockChart');
+    if (el1 && labels.length) {
+      const chart1 = echarts.init(el1);
+      chart1.setOption({
+        tooltip: {},
+        xAxis: { type: 'category', data: labels },
+        yAxis: { type: 'value', name: 'kg' },
+        series: [{ type: 'bar', data, itemStyle: { color: '#0d6efd' } }]
+      });
+    }
+
+    // Capacidad vs ocupación por cámara (stacked bar)
+  })();
+</script>
+<script>
+  (function(){
+    // Grafico: cantidad de productos por corte (no por kilos)
+    try {
+      const el = document.getElementById('corteCountChart');
+      const labels = [
+        {% for c in counts_by_corte %}
+          "{{ c.nombre__nombre|escapejs }}"{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+      ];
+      const values = [
+        {% for c in counts_by_corte %}
+          {{ c.count }}{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+      ];
+      if (el && labels.length) {
+        const chart = echarts.init(el);
+        chart.setOption({
+          tooltip: { trigger: 'axis' },
+          xAxis: { type: 'category', data: labels },
+          yAxis: { type: 'value', name: 'Cantidad' },
+          series: [{ type: 'bar', data: values, itemStyle: { color: '#0dcaf0' } }]
+        });
+      }
+    } catch (e) {
+      console.error('Error creando gráfico de cantidad por corte', e);
+    }
+  })();
+</script>
+<script>
+  (function(){
+    const el2 = document.getElementById('capacidadChart');
+    try {
+      const names = [
+        {% for f in frigo_resumen %}"{{ f.nombre|escapejs }}"{% if not forloop.last %}, {% endif %}{% endfor %}
+      ];
+      const ocupadosProductos = [
+        {% for f in frigo_resumen %}{{ f.productos }}{% if not forloop.last %}, {% endif %}{% endfor %}
+      ];
+      const disponiblesProductos = [
+        {% for f in frigo_resumen %}{{ f.restante|floatformat:0 }}{% if not forloop.last %}, {% endif %}{% endfor %}
+      ];
+      if (el2 && names.length) {
+        const chart2 = echarts.init(el2);
+        chart2.setOption({
+          tooltip: { trigger: 'axis' },
+          legend: { data: ['Ocupado (productos)', 'Disponible (productos)'] },
+          xAxis: { type: 'category', data: names },
+          yAxis: { type: 'value', name: 'Productos' },
+          series: [
+            { name: 'Ocupado (productos)', type: 'bar', stack: 'total', itemStyle: { color: '#198754' }, data: ocupadosProductos },
+            { name: 'Disponible (productos)', type: 'bar', stack: 'total', itemStyle: { color: '#6c757d' }, data: disponiblesProductos }
+          ]
+        });
+      }
+    } catch (e) {
+      console.error('Error preparando datos de cámaras', e);
+    }
+  })();
+</script>
+{% endblock %}

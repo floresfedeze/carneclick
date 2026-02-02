@@ -5,6 +5,7 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.contrib import messages
+from urllib.parse import urlencode
 
 
 def register(request):
@@ -75,3 +76,13 @@ def login_view(request):
 def CerrarSesion(request):
     logout(request)
     return redirect('/')
+
+
+def set_language(request):
+    lang = request.GET.get('lang')
+    if lang in ('en', 'es'):
+        request.session['lang'] = lang
+        messages.success(request, 'Idioma cambiado a {}.'.format(
+            'English' if lang == 'en' else 'Español'))
+    next_url = request.META.get('HTTP_REFERER') or '/'
+    return redirect(next_url)

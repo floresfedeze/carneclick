@@ -1,0 +1,80 @@
+{% extends "base_encargado.html" %}
+{% load static %}
+
+{% block head %}
+<title> Cámaras </title>
+<link rel="stylesheet" href="{% static 'encargado/css/stock.css' %}">
+{% endblock %}
+{% block content %}
+<div class="menu_encargado">
+    <div class="main-header">
+        <div class="table-header">
+            <h2>{{ ui.Cameras }}</h2>
+
+            <div class="filters">
+                <select id="fieldSelect">
+                    <option value="all">{{ ui.FilterBy }}</option>
+                    <option value="0">ID</option>
+                    <option value="1">Nombre</option>
+                    <option value="2">Capacidad</option>
+                </select>
+
+                <input type="text" id="tableSearch" placeholder="{{ ui.Search }}">
+            </div>
+        </div>
+        <a href="entrada_camara" class="btn btn-primary mb-3">Agregar una nueva cámara</a>
+    </div>
+    <table class="table" id="stockTable">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Capacidad</th>
+                <th>Opciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for camara in camaras %}
+            <tr data-id="{{ camara.id }}">
+                <th data-label="ID">{{ camara.id }}</th>
+                <td data-label="Nombre">{{ camara.nombre }}</td>
+                <td data-label="Capacidad">{{ camara.capacidad }}</td>
+                <td data-label="Opciones">
+                    <a href="{% url 'administrador:editar_camara' camara.id %}"><img src="{% static 'encargado/img/editar.png' %}" alt="editar"></a>
+                    <a href="{% url 'administrador:eliminar_camara' camara.id %}"><img src="{% static 'encargado/img/eliminar.png' %}" alt="eliminar"></a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    const searchInput = document.getElementById("tableSearch");
+    const fieldSelect = document.getElementById("fieldSelect");
+    const rows = document.querySelectorAll("#stockTable tbody tr");
+
+    function filterTable() {
+        const searchValue = searchInput.value.toLowerCase();
+        const selectedField = fieldSelect.value;
+
+        rows.forEach(row => {
+            const cells = row.querySelectorAll("th, td");
+            let textToSearch = "";
+
+            if (selectedField === "all") {
+                textToSearch = row.innerText.toLowerCase();
+            } else {
+                const index = parseInt(selectedField);
+                textToSearch = cells[index].innerText.toLowerCase();
+            }
+
+            row.style.display = textToSearch.includes(searchValue) ? "" : "none";
+        });
+    }
+
+    searchInput.addEventListener("keyup", filterTable);
+    fieldSelect.addEventListener("change", filterTable);
+</script>
+
+{% endblock %}

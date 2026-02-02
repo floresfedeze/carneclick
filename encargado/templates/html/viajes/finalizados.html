@@ -1,0 +1,59 @@
+{% extends 'base_encargado.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Viajes finalizados</h2>
+    <a class="btn btn-outline-secondary" href="{% url 'encargado:viajes_activos' %}">Ver activos</a>
+  </div>
+
+  {% if viajes %}
+    {% for entry in viajes %}
+      <div class="card mb-3">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div><strong>Viaje #{{ entry.viaje.id }}</strong> • {{ entry.viaje.fecha|date:"d/m/Y H:i" }}</div>
+              <div class="text-muted">Chofer: {{ entry.viaje.chofer }} • Ayudante: {{ entry.viaje.ayudante }} • Camión: {{ entry.viaje.camion_viaje }}</div>
+            </div>
+            <div>
+              <span class="badge bg-success">Finalizado</span>
+            </div>
+          </div>
+          <hr>
+          <div>
+            <h6 class="mb-2">Pedidos entregados ({{ entry.cantidad_pedidos }})</h6>
+            <div class="table-responsive">
+              <table class="table table-sm mb-0">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Cliente</th>
+                    <th>Destino</th>
+                    <th>Items</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for p in entry.pedidos %}
+                    <tr>
+                      <td>#{{ p.id }}</td>
+                      <td>{{ p.cliente.nombre }} {{ p.cliente.apellido }}</td>
+                      <td>{{ p.cliente.comercio.nombre }}</td>
+                      <td>{{ p.detallepedido_set.count }}</td>
+                    </tr>
+                  {% empty %}
+                    <tr><td colspan="4" class="text-center">Sin pedidos</td></tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="alert alert-info">No hay viajes finalizados.</div>
+  {% endif %}
+</div>
+{% endblock %}

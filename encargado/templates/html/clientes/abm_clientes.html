@@ -10,8 +10,8 @@
 
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="fw-bold">Clientes Actuales</h3>
-        <small class="text-muted">Lista de usuarios que son clientes actuales</small>
+        <h3 class="fw-bold">Clientes actuales</h3>
+        <small class="text-muted">Lista de usuarios aprobados como clientes</small>
     </div>
 
     <!-- Tabla responsive -->
@@ -32,16 +32,9 @@
                     <td>{{ user.username }}</td>
                     <td>{{ user.email }}</td>
                     <td>
-                        <!-- Ver detalles -->
-                        <a href="{% url 'encargado:ver_detalles_clientes' user.id %}" class="btn btn-primary btn-sm">
-                            <i class="bi bi-eye"></i> Ver detalles
-                        </a>
-                        <a href="" class="btn btn-success btn-sm">
-                            <i class="bi bi-eye"></i> Editar
-                        </a>
-                        <a href="" class="btn btn-success btn-sm">
-                            <i class="bi bi-eye"></i> Eliminar
-                        </a>
+                        <a href="{% url 'encargado:ver_detalles_clientes' user.id %}" class="btn btn-primary btn-sm">Ver detalles</a>
+                        <a href="#" class="btn btn-outline-secondary btn-sm">Editar</a>
+                        <a href="#" class="btn btn-outline-danger btn-sm">Eliminar</a>
 
 
                     </td>

@@ -1,0 +1,131 @@
+{% extends "base_encargado.html" %}
+{% load static %}
+
+{% block head %}
+<title>Editar pedido preparado</title>
+<link rel="stylesheet" href="{% static 'encargado/css/stock.css' %}">
+<style>
+  .chip { background:#f1f3f5; border:1px solid #e9ecef; border-radius:6px; padding:.25rem .5rem; font-size:.85rem; }
+  .badge-state { font-weight:500; }
+  .badge-state.en-stock { background:#e7f5ff; color:#1c7ed6; }
+  .badge-state.preparado { background:#fff3bf; color:#e67700; }
+  .badge-state.de-viaje { background:#e3fafc; color:#0c8599; }
+  .badge-state.entregado { background:#ebfbee; color:#2b8a3e; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+        {# Mensajes ahora se muestran con SweetAlert desde base_encargado.html #}
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="mb-0">Pedido <span class="chip">#{{ pedido.id }}</span></h2>
+          <div class="d-flex gap-2">
+            <a class="btn btn-secondary btn-sm" href="{% url 'encargado:detalles_pedido_preparado' pedido.id %}">Volver</a>
+            {% if pedido.viaje %}
+              <a class="btn btn-outline-secondary btn-sm" href="{% url 'encargado:gestionar_viaje' pedido.viaje.id %}">Volver al viaje</a>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-header">Información del pedido</div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-md-3"><strong>Destino:</strong> {{ pedido.cliente.comercio.nombre }}</div>
+              <div class="col-md-3"><strong>Origen:</strong> {{ pedido.comercio_origen|default:"-" }}</div>
+              <div class="col-md-3"><strong>Estado:</strong> <span class="badge bg-secondary">{{ pedido.estado.estado }}</span></div>
+              <div class="col-md-3"><strong>Creado:</strong> {{ pedido.creado_en|date:"d/m/Y H:i" }}</div>
+              <div class="col-12"><strong>Observaciones:</strong> {{ pedido.observaciones|default:"-" }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-header">Editar datos</div>
+          <div class="card-body">
+            <form method="post">
+              {% csrf_token %}
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="id_comercio_origen" class="form-label">Sucursal de origen</label>
+                  {{ form.comercio_origen }}
+                </div>
+                <div class="col-md-6">
+                  <label for="id_observaciones" class="form-label">Observaciones</label>
+                  {{ form.observaciones }}
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary mt-3">Guardar cambios</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-header">Productos del pedido</div>
+          <div class="card-body p-0">
+            <table class="table mb-0">
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Corte</th>
+                  <th>Kilos</th>
+                  <th>Frigorífico</th>
+                  <th>Estado</th>
+                  <th style="width:110px;">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in detalles %}
+                {% with p=item.producto_id %}
+                <tr>
+                  <th>#{{ p.id }}</th>
+                  <td>{{ p.nombre }}</td>
+                  <td>{{ p.kilos }}</td>
+                  <td>{{ p.frigorificop }}</td>
+                  <td>
+                    {% if p.estado == 'en stock' %}
+                      <span class="badge badge-state en-stock">En stock</span>
+                    {% elif p.estado == 'preparado' %}
+                      <span class="badge badge-state preparado">Preparado</span>
+                    {% elif p.estado == 'de viaje' %}
+                      <span class="badge badge-state de-viaje">De viaje</span>
+                    {% elif p.estado == 'entregado' %}
+                      <span class="badge badge-state entregado">Entregado</span>
+                    {% else %}
+                      {{ p.estado }}
+                    {% endif %}
+                  </td>
+                  <td>
+                    <a class="btn btn-outline-danger btn-sm" href="{% url 'encargado:eliminar_item_preparado' item.id %}">Eliminar</a>
+                  </td>
+                </tr>
+                {% endwith %}
+                {% empty %}
+                <tr><td colspan="6" class="text-center py-3">No hay productos en este pedido.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-header">Agregar producto por Codigo</div>
+          <div class="card-body">
+            <form method="post" action="{% url 'encargado:agregar_producto_preparado' pedido.id %}">
+              {% csrf_token %}
+              <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                  <label for="id_producto_id" class="form-label">Codigo del producto</label>
+                  {{ agregar_form.producto_id }}
+                </div>
+                <div class="col-md-8">
+                  <button type="submit" class="btn btn-success">Agregar al pedido</button>
+                  <small class="text-muted ms-2">Solo acepta productos en estado "En stock"</small>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    {% endblock %}

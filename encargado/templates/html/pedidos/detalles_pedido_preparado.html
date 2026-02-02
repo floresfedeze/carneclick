@@ -1,0 +1,118 @@
+{% extends "base_encargado.html" %}
+{% load static %}
+
+{% block head %}
+<title>Pedido Preparado — Detalles</title>
+<link rel="stylesheet" href="{% static 'encargado/css/stock.css' %}">
+<style>
+  .info-bar { display:flex; gap:1rem; flex-wrap:wrap; }
+  .info-item { display:flex; flex-direction:column; padding:.25rem 0; min-width:220px; }
+  .info-label { font-size:.8rem; color:#6c757d; }
+  .info-value { font-weight:600; }
+  .badge { display: inline-block; padding: .25rem .5rem; border-radius: 12px; font-size: .75rem; }
+  .badge-green { background: #e9f7f1; color: #1abc9c; }
+  .badge-blue { background: #e8f1fd; color: #2c7be5; }
+  .badge-gray { background: #f1f3f5; color: #495057; }
+  .table th, .table td { vertical-align: middle; }
+  .section-title { display:flex; align-items:center; gap:.5rem; }
+  .section-title .dot { width:10px; height:10px; background:#1abc9c; border-radius:50%; }
+  .muted { color: #6c757d; }
+  .right-actions { display:flex; gap:.5rem; }
+  .table-footer { display:flex; justify-content: space-between; align-items:center; padding: .75rem 0; }
+  .pill { background:#f8f9fa; border:1px solid #e9ecef; border-radius:20px; padding:.25rem .6rem; font-size:.85rem; }
+  .header-wrap { display:flex; justify-content:space-between; align-items:center; }
+  .id-chip { background:#f8f9fa; border:1px solid #e9ecef; border-radius:6px; padding:.2rem .5rem; font-size:.85rem; }
+  .subtitle { color:#6c757d; font-size:.9rem; }
+  .client-name { font-weight:600; }
+  .small { font-size:.85rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="menu_encargado">
+  <div class="main-header">
+    <div class="table-header">
+      <div class="header-wrap">
+        <div>
+          <h2 class="section-title"><span class="dot"></span> Detalles del Pedido</h2>
+          <div class="subtitle">Pedido <span class="id-chip">#{{ pedido.id }}</span> — Estado
+            <span class="badge badge-blue">{{ pedido.estado.estado }}</span>
+          </div>
+          <div class="muted">Última actualización: {{ pedido.creado_en|date:"d/m/Y H:i" }}</div><div class="right-actions">
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-bar" style="margin-top:1.5rem; margin-bottom:1rem;">
+    <div class="info-item">
+      <div class="info-label">Sucursal de origen</div>
+      <div class="info-value">{{ pedido.comercio_origen|default:"-" }}</div>
+      <div class="small muted">Dirección: {{ pedido.comercio_origen.direccion|default:"-" }}</div>
+    </div>
+    <div class="info-item">
+      <div class="info-label">Sucursal destino</div>
+      <div class="info-value">{{ cliente.comercio.nombre|default:"-" }}</div>
+      <div class="small muted">Dirección: {{ cliente.comercio.direccion|default:"-" }}</div>
+    </div>
+    <div class="info-item" style="min-width:320px;">
+      <div class="info-label">Observaciones</div>
+      <div class="info-value">{{ pedido.observaciones|default:"-" }}</div>
+    </div>
+  </div>
+
+  <table class="table" id="detalleTable">
+    <thead class="table-dark">
+      <tr>
+        <th>Código</th>
+        <th>Corte</th>
+        <th>Kilos</th>
+        <th>Temperatura</th>
+        <th>Frigorífico</th>
+        <th>Entrada</th>
+        <th>Vence</th>
+        <th>Estado</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in detalles %}
+      {% with p=item.producto_id %}
+      <tr>
+        <th data-label="Código">{{ p.id }}</th>
+        <td data-label="Corte">{{ p.nombre }}</td>
+        <td data-label="Kilos">{{ p.kilos }}</td>
+        <td data-label="Temperatura">{{ p.temperatura.nombre }}</td>
+        <td data-label="Frigorífico">{{ p.frigorificop }}</td>
+        <td data-label="Entrada">{{ p.fecha_entrada.fecha|date:"d/m/Y H:i" }}</td>
+        <td data-label="Vence">{{ p.fecha_vencimiento|date:"d/m/Y" }}</td>
+        <td data-label="Estado">
+          {% if p.estado == 'en stock' %}
+            <span class="badge badge-green">{{ p.estado }}</span>
+          {% elif p.estado == 'preparado' %}
+            <span class="badge badge-blue">{{ p.estado }}</span>
+          {% else %}
+            <span class="badge badge-gray">{{ p.estado }}</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endwith %}
+      {% empty %}
+      <tr><td colspan="8">No hay productos en este pedido.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="table-footer">
+    <div>
+      <span class="pill">Ítems: {{ total_items }}</span>
+      <span class="pill">Total kg: {{ total_kilos }}</span>
+    </div>
+    <div class="right-actions">
+      <div class="muted" style="margin-right:.75rem;">Creado: {{ pedido.creado_en|date:"d/m/Y H:i" }}</div>
+      <a class="btn btn-secondary btn-sm" href="{% url 'encargado:pedidos_preparados' %}">Volver</a>
+      <a class="btn btn-primary btn-sm" href="{% url 'encargado:editar_pedido_preparado' pedido.id %}">Editar</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

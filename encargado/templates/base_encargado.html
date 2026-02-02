@@ -8,6 +8,8 @@
     {% block head %}
     {% endblock %}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
     <link rel="stylesheet" href="{% static 'encargado/css/style_encargado.css' %}">
 </head>
 
@@ -21,7 +23,7 @@
             </div>
             <div class="brand">
                 <a href="" class="icon-header">
-                    <img src="{% static 'encargado/img/supercarnes.png' %}" alt="supercarnes">
+                    <img src="{% static 'encargado/img/supercarnes1.png' %}" alt="supercarnes">
                 </a>
             </div>
         </div>
@@ -44,7 +46,7 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'encargado:home' %}">
                         <img src="{% static 'encargado/img/menu_sidebar.png' %}">
-                        <span>Dashboard</span>
+                        <span>{{ ui.Dashboard }}</span>
                     </a>
                 </li>
 
@@ -52,13 +54,14 @@
                 <li class="nav-item dropdown">
                     <a data-bs-toggle="collapse" data-bs-target="#collapseWidthExample" aria-expanded="false" aria-controls="collapseWidthExample">
                         <img src="{% static 'encargado/img/pedidos.svg' %}">
-                        <span>Pedidos</span>
+                        <span>{{ ui.Orders }}</span>
                         <img src="{% static 'encargado/img/flecha_abajo.svg' %}">
                     </a>
                     <ul class="collapse" id="collapseWidthExample">
-                        <li><a class="" href="#">Nuevo pedido</a></li>
-                        <li><a class="" href="{% url 'encargado:pedidos_pendientes'%}">Pendientes</a></li>
-                        <li><a class="" href="#">Entregados</a></li>
+                        <li><a class="" href="{% url 'encargado:nuevo_pedido_manual' %}">{{ ui.NewOrder }}</a></li>
+                        <li><a class="" href="{% url 'encargado:pedidos_pendientes'%}">{{ ui.Pending }}</a></li>
+                        <li><a class="" href="{% url 'encargado:pedidos_preparados'%}">{{ ui.Prepared }}</a></li>
+                        <li><a class="" href="{% url 'encargado:pedidos_entregados'%}">{{ ui.Delivered }}</a></li>
                     </ul>
                 </li>
 
@@ -66,13 +69,13 @@
                 <li class="nav-item dropdown">
                     <a data-bs-toggle="collapse" data-bs-target="#ViajesExample" aria-expanded="false" aria-controls="ViajesExample">
                         <img src="{% static 'encargado/img/viajes.svg' %}">
-                        <span>Viajes</span>
+                        <span>{{ ui.Trips }}</span>
                         <img src="{% static 'encargado/img/flecha_abajo.svg' %}">
                     </a>
                     <ul class="collapse" id="ViajesExample">
-                        <li><a  href="#">Nuevo viaje</a></li>
-                        <li><a href="#">Activos</a></li>
-                        <li><a href="#">Finalizados</a></li>
+                        <li><a  href="{% url 'encargado:nuevo_viaje' %}">{{ ui.NewTrip }}</a></li>
+                        <li><a href="{% url 'encargado:viajes_activos' %}">{{ ui.Active }}</a></li>
+                        <li><a href="{% url 'encargado:viajes_finalizados' %}">{{ ui.Finished }}</a></li>
                     </ul>
                 </li>
 
@@ -80,12 +83,13 @@
                 <li class="nav-item dropdown">
                     <a data-bs-toggle="collapse" data-bs-target="#ProductosExample" aria-expanded="false" aria-controls="ProductosExample">
                         <img src="{% static 'encargado/img/stock.svg' %}">
-                        <span>Productos</span>
+                        <span>{{ ui.Products }}</span>
                         <img src="{% static 'encargado/img/flecha_abajo.svg' %}">
                     </a>
                     <ul class="collapse" id="ProductosExample">
-                        <li><a  href="{% url 'encargado:entrada'%}">Entradas</a></li>
-                        <li><a  href="{% url 'encargado:stock'%}">Stock</a></li>
+                        <li><a  href="{% url 'encargado:entrada'%}">{{ ui.Entries }}</a></li>
+
+                        <li><a  href="{% url 'encargado:ver_todos_productos'%}">{{ ui.ViewAll }}</a></li>
 
                     </ul>
                 </li>
@@ -94,12 +98,12 @@
                 <li class="nav-item dropdown">
                     <a data-bs-toggle="collapse" data-bs-target="#ClientesExample" aria-expanded="false" aria-controls="ClientesExample">
                         <img src="{% static 'encargado/img/personas.png' %}">
-                        <span>Clientes</span>
+                        <span>{{ ui.Clients }}</span>
                         <img src="{% static 'encargado/img/flecha_abajo.svg' %}">
                     </a>
                     <ul class="collapse" id="ClientesExample">
-                        <li><a href="{% url 'encargado:clientes'%}">Actuales </a></li>
-                        <li><a href="{% url 'encargado:clientes_pendientes_e' %}">Pendientes</a></li>
+                        <li><a href="{% url 'encargado:clientes'%}">{{ ui.CurrentClients }}</a></li>
+                        <li><a href="{% url 'encargado:clientes_pendientes_e' %}">{{ ui.PendingClients }}</a></li>
                     </ul>
                 </li>
                 
@@ -109,12 +113,15 @@
                 <li class="nav-item dropdown">
                     <a data-bs-toggle="collapse" data-bs-target="#AdministracionExample" aria-expanded="false" aria-controls="AdministracionExample">
                         <img src="{% static 'encargado/img/apoyo.png' %}">
-                        <span>Administración</span>
+                        <span>{{ ui.Administration }}</span>
                         <img src="{% static 'encargado/img/flecha_abajo.svg' %}">
                     </a>
                     <ul class="collapse" id="AdministracionExample">
-                        <li><a href="{% url 'administrador:empleados' %}">Empleados</a></li>
-                        <li><a href="{% url 'administrador:camiones' %}">Camiones</a></li>
+                        <li><a href="{% url 'administrador:empleados' %}">{{ ui.Employees }}</a></li>
+                        <li><a href="{% url 'administrador:camiones' %}">{{ ui.Trucks }}</a></li>
+                        <li><a href="{% url 'administrador:proveedores' %}">{{ ui.Suppliers }}</a></li>
+                        <li><a href="{% url 'administrador:cortes' %}">{{ ui.Cuts }}</a></li>
+                        <li><a href="{% url 'administrador:camaras' %}">{{ ui.Cameras }}</a></li>
                     </ul>
                 </li>
 
@@ -122,12 +129,13 @@
                 <li class="nav-item dropdown">
                     <a data-bs-toggle="collapse" data-bs-target="#ReportesExample" aria-expanded="false" aria-controls="ReportesExample">
                         <img src="{% static 'encargado/img/grafico-de-barras.png' %}">
-                        <span>Reportes</span>
+                        <span>{{ ui.Reports }}</span>
                         <img src="{% static 'encargado/img/flecha_abajo.svg' %}">
                     </a>
                     <ul class="collapse" id="ReportesExample">
-                        <li><a  href="{% url 'administrador:empleados' %}">Empleados</a></li>
-                        <li><a  href="{% url 'administrador:camiones' %}">Camiones</a></li>
+                        <li><a href="{% url 'encargado:reporte_consolidado' %}">Consolidado</a></li>
+                        <li><a href="{% url 'encargado:reporte_stock' %}">{{ ui.ReportStock }}</a></li>
+                        <li><a href="{% url 'encargado:reporte_vencimientos' %}">{{ ui.ReportExpiring }}</a></li>
                     </ul>
                 </li>
 
@@ -135,12 +143,13 @@
                 <li class="nav-item dropdown">
                     <a data-bs-toggle="collapse" data-bs-target="#ConfiguracionExample" aria-expanded="false" aria-controls="ConfiguracionExample">
                         <img src="{% static 'encargado/img/engranaje.png' %}">
-                        <span>Configuracion</span>
+                        <span>{{ ui.Settings }}</span>
                         <img src="{% static 'encargado/img/flecha_abajo.svg' %}">
                     </a>
                     <ul class="collapse" id="ConfiguracionExample">
-                        <li><a  href="">Idioma</a></li>
-                        <li><a  href="{% url 'logout' %}">Cerrar sesion</a></li>
+                        <li><a  href="{% url 'set_language' %}?lang=en">{{ ui.Language }}: English</a></li>
+                        <li><a  href="{% url 'set_language' %}?lang=es">{{ ui.Language }}: Español</a></li>
+                        <li><a  href="{% url 'logout' %}">{{ ui.Logout }}</a></li>
                     </ul>
                 </li>
 
@@ -148,7 +157,7 @@
                 <li class="nav-item dropdown">
                     <a>
                         <img src="{% static 'encargado/img/centro-de-llamadas.png' %}">
-                        <span>Soporte</span>
+                        <span>{{ ui.Support }}</span>
                     </a>
                 </li>
             </ul>
@@ -162,6 +171,19 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
     <script src="{% static 'encargado/js/script.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    {% if messages %}
+    {% for message in messages %}
+    <script>
+        Swal.fire({
+            title: "{% if 'success' in message.tags %}Éxito{% elif 'warning' in message.tags %}Advertencia{% else %}Error{% endif %}",
+            text: "{{ message|escapejs }}",
+            icon: "{% if 'success' in message.tags %}success{% elif 'warning' in message.tags %}warning{% else %}error{% endif %}"
+        });
+    </script>
+    {% endfor %}
+    {% endif %}
     
 
 </body>

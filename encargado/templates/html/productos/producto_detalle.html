@@ -1,0 +1,70 @@
+{% extends "base_encargado.html" %}
+{% load static %}
+
+{% block head %}
+<title>Detalle Producto</title>
+<link rel="stylesheet" href="{% static 'encargado/css/stock.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="menu_encargado">
+  <div class="main-header">
+    <h2>Detalle de Producto</h2>
+    <div class="mb-3">
+      <a href="{% url 'encargado:ver_todos_productos' %}" class="btn btn-light">Volver</a>
+      <a href="{% url 'encargado:editar_producto' producto.id %}" class="btn btn-primary">Editar</a>
+      <a href="{% url 'encargado:eliminar_producto' producto.id %}" class="btn btn-danger">Eliminar</a>
+    </div>
+  </div>
+
+  <div class="card p-3">
+    <h4>Producto #{{ producto.id }} - {{ producto.nombre }}</h4>
+    <dl class="row">
+      <dt class="col-sm-3">Código</dt>
+      <dd class="col-sm-9">{{ producto.codigo|default:"-" }}</dd>
+
+      <dt class="col-sm-3">Kilos</dt>
+      <dd class="col-sm-9">{{ producto.kilos }} kg</dd>
+
+      <dt class="col-sm-3">Reservado</dt>
+      <dd class="col-sm-9">{{ producto.reserved_kilos|default:0 }} kg</dd>
+
+      <dt class="col-sm-3">Disponible</dt>
+      <dd class="col-sm-9">{{ producto.available_kilos|default:0 }}</dd>
+
+      <dt class="col-sm-3">Estado</dt>
+      <dd class="col-sm-9">{{ producto.estado }}</dd>
+
+      <dt class="col-sm-3">Frigorífico</dt>
+      <dd class="col-sm-9">{{ producto.frigorificop }}</dd>
+
+      <dt class="col-sm-3">Temperatura (días conserv.)</dt>
+      <dd class="col-sm-9">{{ producto.temperatura.dias }}</dd>
+
+      <dt class="col-sm-3">Fecha de vencimiento</dt>
+      <dd class="col-sm-9">{% if fecha_vencimiento %}{{ fecha_vencimiento|date:"d/m/Y %H:%M" }}{% else %}-{% endif %}</dd>
+    </dl>
+
+    <hr>
+
+    <h5>Entrada de origen</h5>
+    {% if entrada %}
+      <dl class="row">
+        <dt class="col-sm-3">ID Entrada</dt>
+        <dd class="col-sm-9"><a href="{% url 'encargado:entrada_detalle' entrada.id %}">#{{ entrada.id }}</a></dd>
+
+        <dt class="col-sm-3">Fecha de entrada</dt>
+        <dd class="col-sm-9">{% if entrada.fecha %}{{ entrada.fecha|date:"d/m/Y %H:%M" }}{% else %}-{% endif %}</dd>
+
+        <dt class="col-sm-3">Proveedor</dt>
+        <dd class="col-sm-9">{% if proveedor %}{{ proveedor.nombre }} - {{ proveedor.telefono }}{% else %}-{% endif %}</dd>
+
+        <dt class="col-sm-3">Número de lote</dt>
+        <dd class="col-sm-9">{{ entrada.numero_lote|default:"-" }}</dd>
+      </dl>
+    {% else %}
+      <p>No hay información de entrada asociada.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

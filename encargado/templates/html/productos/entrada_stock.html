@@ -28,7 +28,7 @@
                 {{ form }}
                 <input type="submit" name="accion" value="Agregar otro producto" class="btn btn-primary">
                 
-                <input type="submit" name="ticket" value="Generar ticket" class="btn btn-success" onclick="return generarTicketYVolver();">
+                <button type="submit" name="ticket" value="1" class="btn btn-success" formtarget="_blank">Generar ticket</button>
                 <input type="submit" name="accion" value="Guardar y terminar" class="btn btn btn-danger">
                 <a href="{% url 'encargado:finalizar_entrada' %}" class="btn btn-danger">Finalizar</a>
             </form>
@@ -41,7 +41,7 @@
                         <tr>
                             <th>Producto</th>
                             <th>Kilos</th>
-
+                            <th>Lote</th>
                             <th>Vencimiento</th>
                         </tr>
                     </thead>
@@ -50,8 +50,8 @@
                             <tr>
                                 <td>{{ p.nombre }}</td>
                                 <td>{{ p.kilos }}</td>
-
-                                <td>{{ p.fecha_vencimineto|date:"d/m/Y" }}</td>
+                                <td>{{ p.fecha_entrada.numero_lote|default:"-" }}</td>
+                                <td>{{ p.fecha_vencimiento|date:"d/m/Y" }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -64,24 +64,22 @@
 </div>
 
 <script>
-function generarTicketYVolver() {
-    // Crear un iframe temporal para enviar el formulario y abrir el PDF en nueva pestaña
+// Deshabilitar buttons en submit para evitar doble envío
+document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('productoForm');
-    const originalTarget = form.target;
-    
-    // Enviar en nueva pestaña
-    form.target = '_blank';
-    
-    // Enviar el formulario
-    setTimeout(() => {
-        // Después de enviar, esperar 1 segundo y volver a esta página
+    form.addEventListener('submit', (e) => {
+        const submitter = e.submitter || document.activeElement;
+        const buttons = form.querySelectorAll('input[type="submit"], button[type="submit"]');
+        buttons.forEach(b => {
+            if (b !== submitter) b.disabled = true;
+        });
         setTimeout(() => {
-            form.target = originalTarget;
-        }, 500);
-    }, 100);
-    
-    return true;
-}
+            buttons.forEach(b => b.disabled = false);
+        }, 2000);
+    });
+});
+
+// Usamos formtarget="_blank" en el botón de ticket
 </script>
 
 {% endblock %}

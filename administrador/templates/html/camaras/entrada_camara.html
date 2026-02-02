@@ -1,0 +1,17 @@
+{% extends "base_encargado.html" %}
+{% block head %}
+<title> Nueva Cámara </title>
+{% endblock %}
+{% block content %}
+<div class="container py-3">
+  <h3 class="mb-3">Agregar cámara</h3>
+  <form method="post" class="card p-3">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div class="d-flex gap-2">
+      <button class="btn btn-primary" type="submit" name="accion" value="Guardar">Guardar</button>
+      <button class="btn btn-outline-secondary" type="submit" name="accion" value="Cancelar" formnovalidate>Cancelar</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

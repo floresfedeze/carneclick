@@ -1,0 +1,44 @@
+{% extends "base_encargado.html" %}
+{% load static %}
+
+{% block head %}
+<title>Nuevo Pedido</title>
+<link rel="stylesheet" href="{% static 'encargado/css/stock.css' %}">
+<style>
+  .form-wrap { max-width: 720px; margin-top: 1rem; }
+  .form-card { background: #fff; border: 1px solid #e9ecef; border-radius: 8px; padding: 1rem 1.25rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="menu_encargado">
+  <div class="main-header">
+    <div class="table-header">
+      <h2>Crear nuevo pedido</h2>
+    </div>
+  </div>
+
+  <div class="form-wrap">
+    <div class="form-card">
+      <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label for="id_cliente" class="form-label">Cliente (Sucursal destino)</label>
+          {{ form.cliente }}
+          <div class="form-text">El comercio asociado al cliente será el destino.</div>
+        </div>
+        <div class="mb-3">
+          <label for="id_comercio_origen" class="form-label">Sucursal de origen</label>
+          {{ form.comercio_origen }}
+        </div>
+        <div class="mb-3">
+          <label for="id_observaciones" class="form-label">Observaciones</label>
+          {{ form.observaciones }}
+        </div>
+        <button type="submit" class="btn btn-primary">Crear pedido</button>
+        <a class="btn btn-outline-secondary" href="{% url 'encargado:pedidos_preparados' %}">Cancelar</a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

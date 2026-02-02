@@ -1,0 +1,133 @@
+/* Global theme: typography, colors, components */
+:root {
+    --brand-bg: #f7f9fc;
+    --brand-text: #212529;
+    --brand-muted: #6c757d;
+    --brand-primary: #0d6efd;
+    /* Bootstrap primary */
+    --brand-success: #198754;
+    --brand-warning: #ffc107;
+    --brand-danger: #dc3545;
+    --brand-info: #0dcaf0;
+    --brand-border: #e9ecef;
+    --brand-card-bg: #ffffff;
+}
+
+html,
+body {
+    background-color: var(--brand-bg);
+    color: var(--brand-text);
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+    font-weight: 600;
+    letter-spacing: 0.2px;
+}
+
+small,
+.small,
+.text-muted {
+    color: var(--brand-muted) !important;
+}
+
+/* Cards */
+.card {
+    border: 1px solid var(--brand-border);
+    border-radius: 0.75rem;
+    background: var(--brand-card-bg);
+}
+
+.card-header {
+    font-weight: 600;
+}
+
+.card.shadow-sm {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Tables */
+.table thead th {
+    font-weight: 600;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.04);
+}
+
+.table-striped>tbody>tr:nth-of-type(odd) {
+    --bs-table-accent-bg: rgba(0, 0, 0, .02);
+}
+
+/* Badges */
+.badge {
+    border-radius: 0.5rem;
+    letter-spacing: 0.3px;
+}
+
+/* Buttons */
+.btn {
+    border-radius: 0.5rem;
+}
+
+.btn-primary {
+    background-color: var(--brand-primary);
+    border-color: var(--brand-primary);
+}
+
+.btn-outline-primary {
+    color: var(--brand-primary);
+    border-color: var(--brand-primary);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--brand-primary);
+    color: #fff;
+}
+
+/* Forms */
+.form-label {
+    font-weight: 500;
+}
+
+.form-control,
+.form-select {
+    border-color: var(--brand-border);
+    border-radius: 0.5rem;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+}
+
+.invalid-feedback {
+    font-size: 0.875rem;
+}
+
+/* Headers / Navbar */
+.navbar-dark.bg-dark {
+    background-color: #1f2937 !important;
+}
+
+/* Sidebar tweaks (encargado) */
+.sidebar nav ul li a {
+    color: var(--brand-text);
+}
+
+.sidebar nav ul li a:hover {
+    background: rgba(13, 110, 253, 0.08);
+    border-radius: 0.5rem;
+}
+
+/* Misc spacing */
+.display-6 {
+    font-weight: 600;
+}

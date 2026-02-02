@@ -1,37 +1,67 @@
 {% extends "cliente.html" %}
 {% block content %}
 
-<div class="container mt-3">
-
-    <h2 class="mb-3">Pedidos activos</h2>
-
-    {% for pedido in pedidos %}
-    <div class="card mb-3">
-        <div class="card-header d-flex justify-content-between">
-            <strong>Pedido #{{ pedido.id }}</strong>
-            <span class="badge bg-primary">{{ pedido.get_estado_display }}</span>
-        </div>
-
-        <div class="card-body">
-            <p class="mb-2">
-                Fecha: {{ pedido.fecha|date:"d/m/Y H:i" }}
-            </p>
-
-            <ul class="list-group">
-                {% for item in pedido.items.all %}
-                <li class="list-group-item d-flex justify-content-between">
-                    {{ item.corte.nombre }}
-                    <span class="badge bg-dark">
-                        x{{ item.cantidad }}
-                    </span>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
+<div class="container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Pedidos activos</h2>
+        <span class="badge bg-info text-dark">{{ pedidos|length }} activos</span>
     </div>
-    {% empty %}
-    <p>No tenés pedidos activos.</p>
-    {% endfor %}
+
+    {% if pedidos %}
+            <!-- Tabla para pantallas medianas y grandes -->
+            <div class="table-responsive shadow-sm rounded bg-white p-3 d-none d-md-block">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>Destino</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                            <th>Productos</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in pedidos %}
+                        <tr>
+                            <td>{{ p.id }}</td>
+                            <td>{{ p.cliente.comercio.nombre }}</td>
+                            <td>{{ p.creado_en|date:"d/m/Y H:i" }}</td>
+                            <td><span class="badge bg-primary">Activo</span></td>
+                            <td>{{ p.detallepedido_set.count }}</td>
+                            <td>
+                                <a href="{% url 'cliente:pedido_detalle' p.id %}" class="btn btn-sm btn-outline-primary">Ver detalles</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Tarjetas para pantallas pequeñas -->
+            <div class="d-md-none">
+                <div class="row g-3">
+                    {% for p in pedidos %}
+                    <div class="col-12">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="mb-0">Pedido #{{ p.id }}</h6>
+                                    <span class="badge bg-primary">Activo</span>
+                                </div>
+                                <div class="small text-muted mb-2">{{ p.creado_en|date:"d/m/Y H:i" }}</div>
+                                <div class="mb-2"><strong>Destino:</strong> {{ p.cliente.comercio.nombre }}</div>
+                                <div class="mb-3"><strong>Productos:</strong> {{ p.detallepedido_set.count }}</div>
+                                <a href="{% url 'cliente:pedido_detalle' p.id %}" class="btn btn-sm btn-outline-primary w-100">Ver detalles</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% else %}
+            <div class="alert alert-info">No tenés pedidos activos.</div>
+        {% endif %}
 
 </div>
 

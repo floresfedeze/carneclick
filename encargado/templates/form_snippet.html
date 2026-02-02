@@ -2,16 +2,25 @@
 {% load add_attr %}
 {% for field in form %}
     <div class="mb-3">
-        {{ field.label_tag }}
-        {% if field.errors %}
-            {{ field|add_attr:"class:is-invalid" }}
-            <div class="invalid-feedback">
-                {% for error in field.errors %}
-                    {{ error }}
-                {% endfor %}
-            </div>
-        {% else %}
-            {{ field }}
-        {% endif %}
+        <label class="form-label">{{ field.label }}</label>
+        {% with it=field.field.widget.input_type %}
+            {% if field.errors %}
+                {% if it %}
+                    {{ field|add_attr:"class:form-control is-invalid" }}
+                {% else %}
+                    {{ field|add_attr:"class:form-select is-invalid" }}
+                {% endif %}
+                <div class="invalid-feedback">
+                    {% for error in field.errors %}{{ error }}{% endfor %}
+                </div>
+            {% else %}
+                {% if it %}
+                    {{ field|add_attr:"class:form-control" }}
+                {% else %}
+                    {{ field|add_attr:"class:form-select" }}
+                {% endif %}
+            {% endif %}
+        {% endwith %}
+        {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
     </div>
 {% endfor %}

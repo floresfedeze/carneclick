@@ -2,36 +2,43 @@
 {% load static %}
 
 {% block head %}
-<title> Encargado </title>
-<link rel="stylesheet" href="{% static 'encargado/css/nuevo_pedido.css' %}">
+<title>Nuevo pedido</title>
 {% endblock %}
 {% block content %}
 
-<div class="formulario">
-    <form method="post">
-
-        <h2>Nuevo Pedido</h2>
-        <div id="productos-lista">
-            <div class="producto-item">
-                <label>ID de Producto:</label>
-                <input type="number" class="producto_id" name="producto_id[]" min="1" required autocomplete="off">
-                <label>Cantidad:</label>
-                <input type="number" class="cantidad" name="cantidad[]" min="1" value="1" readonly required>
-                <button type="button" class="eliminar-producto" style="display:none">Eliminar</button>
-                <div class="producto-info" style="margin-top:10px; font-size:0.95em;"></div>
-            </div>
+<div class="container py-4">
+    <div class="card">
+        <div class="card-header">Nuevo pedido</div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div id="productos-lista" class="mb-3">
+                    <div class="row g-3 align-items-end producto-item">
+                        <div class="col-md-4">
+                            <label class="form-label">ID de producto</label>
+                            <input type="number" class="form-control producto_id" name="producto_id[]" min="1" required autocomplete="off">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Cantidad</label>
+                            <input type="number" class="form-control cantidad" name="cantidad[]" min="1" value="1" readonly required>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button" class="btn btn-outline-danger eliminar-producto" style="display:none">Eliminar</button>
+                        </div>
+                        <div class="col-12">
+                            <div class="producto-info text-muted" style="font-size:0.95em;"></div>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" id="agregar-producto" class="btn btn-outline-primary mb-3">Agregar otro producto</button>
+                <div class="mb-3">
+                    <label for="observaciones" class="form-label">Observaciones</label>
+                    <textarea id="observaciones" name="observaciones" rows="3" class="form-control"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Realizar pedido</button>
+            </form>
         </div>
-        <button type="button" id="agregar-producto">Agregar otro producto</button>
-        <div>
-            <label for="observaciones">Observaciones:</label>
-            <textarea id="observaciones" name="observaciones" rows="3"></textarea>
-        </div>
-        <div>
-            <button type="submit">Realizar Pedido</button>
-        </div>
-
-
-    </form>
+    </div>
 </div>
 
 

@@ -1,0 +1,17 @@
+{% extends "base_encargado.html" %}
+{% block head %}
+<title> Editar Cámara </title>
+{% endblock %}
+{% block content %}
+<div class="container py-3">
+  <h3 class="mb-3">Editar cámara</h3>
+  <form method="post" class="card p-3">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div class="d-flex gap-2">
+      <button class="btn btn-primary" type="submit">Guardar</button>
+      <a class="btn btn-outline-secondary" href="{% url 'administrador:camaras' %}">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

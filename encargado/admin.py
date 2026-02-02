@@ -1,7 +1,8 @@
 from django.contrib import admin
+from simple_history.admin import SimpleHistoryAdmin
 
 # Register your models here.
-from .models import PedidoItem, Pedido_cliente, Camiones, Rol_empleado, Cliente, Comercio, Tipo_frigorifico, Cortes, Pedido, Productos, DetallePedido, Frigorifico, Viaje, Usuarios, Empleados, Rol, Proveedor, Entrada, Estado
+from .models import PedidoItem, EstadoPedidos, Pedido_cliente, Camiones, Rol_empleado, Cliente, Comercio, Tipo_frigorifico, Cortes, Pedido, Productos, DetallePedido, Frigorifico, Viaje, Usuarios, Empleados, Rol, Proveedor, Entrada, Estado, StockReservation, Lote
 # Register your models here.
 
 
@@ -17,7 +18,7 @@ class Rol_empleadoAdmin(admin.ModelAdmin):
     list_display = ('id', 'nombre')
 
 
-class EntradaAdmin(admin.ModelAdmin):
+class EntradaAdmin(SimpleHistoryAdmin):
     list_display = ('id', 'fecha', 'proveedor')
 
 
@@ -29,9 +30,12 @@ class Tipo_frigorificoAdmin(admin.ModelAdmin):
     list_display = ('id', 'nombre', 'dias')
 
 
-class ProductosAdmin(admin.ModelAdmin):
-    list_display = ('id', 'nombre', 'kilos',
-                    'fecha_entrada', 'frigorificop', 'temperatura')
+class ProductosAdmin(SimpleHistoryAdmin):
+    list_display = ('id', 'codigo', 'nombre', 'kilos', 'reserved_kilos',
+                    'fecha_entrada', 'frigorificop', 'temperatura', 'estado')
+    list_filter = ('estado', 'frigorificop', 'temperatura', 'nombre')
+    search_fields = ('id', 'codigo', 'nombre__nombre')
+    readonly_fields = ('reserved_kilos',)
 
 
 class FrigorificoAdmin(admin.ModelAdmin):
@@ -70,16 +74,40 @@ class ProveedorAdmin(admin.ModelAdmin):
     list_display = ('id', 'nombre', 'cuit', 'direccion', 'telefono')
 
 
-class DetallePedidoAdmin(admin.ModelAdmin):
-    list_display = ('id', 'producto_id', 'pedido_id')
+class DetallePedidoAdmin(SimpleHistoryAdmin):
+    list_display = ('id', 'pedido_id', 'producto_id', 'cantidad')
+    search_fields = ('pedido_id__id', 'producto_id__nombre')
+    list_filter = ('pedido_id', 'producto_id')
 
 
-class PedidoAdmin(admin.ModelAdmin):
-    list_display = ('id', 'cliente', 'viaje', 'user_id', 'creado_en', 'total')
+class EstadoPedidosAdmin(admin.ModelAdmin):
+    list_display = ('id', 'estado')
+
+
+class PedidoAdmin(SimpleHistoryAdmin):
+    list_display = ('id', 'cliente', 'comercio_origen',
+                    'observaciones', 'estado', 'creado_en')
+    search_fields = ('id', 'cliente__nombre', 'cliente__apellido')
+    list_filter = ('estado', 'creado_en')
+    readonly_fields = ('id', 'creado_en')
+
+
+class StockReservationAdmin(admin.ModelAdmin):
+    list_display = ('id', 'producto', 'pedido_item',
+                    'kilos_reserved', 'created_at', 'expires_at')
+    list_filter = ('expires_at', 'producto')
+    search_fields = ('producto__id', 'pedido_item__id')
 
 
 class ViajeAdmin(admin.ModelAdmin):
     list_display = ('id', 'fecha', 'chofer', 'ayudante', 'camion_viaje')
+
+
+class LoteAdmin(SimpleHistoryAdmin):
+    list_display = ('numero_lote', 'producto', 'kilos_disponibles',
+                    'fecha_entrada', 'fecha_vencimiento')
+    search_fields = ('numero_lote', 'producto__id')
+    list_filter = ('fecha_vencimiento',)
 
 
 class EstadoAdmin(admin.ModelAdmin):
@@ -105,3 +133,6 @@ admin.site.register(Estado, EstadoAdmin)
 admin.site.register(Rol_empleado, Rol_empleadoAdmin)
 admin.site.register(Pedido_cliente, Pedido_clienteAdmin)
 admin.site.register(PedidoItem, PedidoItemAdmin)
+admin.site.register(EstadoPedidos, EstadoPedidosAdmin)
+admin.site.register(StockReservation, StockReservationAdmin)
+admin.site.register(Lote, LoteAdmin)

@@ -3,10 +3,7 @@
 
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold">
-            <i class="bi bi-clipboard-check me-2"></i>
-            Pedidos pendientes
-        </h2>
+        <h2 class="fw-bold">Pedidos pendientes</h2>
         <span class="badge bg-warning text-dark fs-6">
             {{ pedidos|length }} pendientes
         </span>
@@ -35,9 +32,7 @@
                     <td>
                         <div class="fw-semibold d-flex align-items-cente r">
                             <span>{{ pedido.cliente.username }}</span>
-                            <a href="{% url 'encargado:ver_detalles_clientes' pedido.cliente.id %}" class="btn btn-primary ms-auto mt-1">
-                            <i class="bi bi-eye"></i> Ver detalles
-                        </a>
+                            <a href="{% url 'encargado:ver_detalles_clientes' pedido.cliente.id %}" class="btn btn-primary ms-auto mt-1">Ver detalles</a>
                         </div>
                         <small class="text-muted ">
                             {{ pedido.cliente.email }} 
@@ -52,11 +47,7 @@
                     <td>
                         <ul class="list-unstyled mb-0">
                             {% for item in pedido.items.all %}
-                            <li>
-                                <i class="bi bi-dot"></i>
-                                {{ item.corte.nombre }} —
-                                <strong>{{ item.cantidad }}</strong>
-                            </li>
+                            <li>{{ item.corte.nombre }} — <strong>{{ item.cantidad }}</strong></li>
                             {% endfor %}
                         </ul>
                     </td>
@@ -85,25 +76,8 @@
     </div>
 
     {% else %}
-    <div class="alert alert-success text-center shadow-sm">
-        <i class="bi bi-check-circle fs-4"></i>
-        <p class="mb-0 mt-2 fw-semibold">
-            No hay pedidos pendientes
-        </p>
-    </div>
+    <div class="alert alert-info text-center shadow-sm">No hay pedidos pendientes</div>
     {% endif %}
 </div>
-<!-- MENSAJES SWEETALERT -->
- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-{% if messages %}
-    {% for message in messages %}
-    <script>
-        Swal.fire({
-            title: "{% if 'success' in message.tags %}Éxito{% elif 'warning' in message.tags %}Advertencia{% else %}Error{% endif %}",
-            text: "{{ message|escapejs }}",
-            icon: "{% if 'success' in message.tags %}success{% elif 'warning' in message.tags %}warning{% else %}error{% endif %}"
-        });
-    </script>
-    {% endfor %}
-{% endif %}
+{# Mensajes SweetAlert ahora se manejan globalmente en base_encargado.html #}
 {% endblock %}

@@ -1,0 +1,67 @@
+{% extends "cliente.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container my-4">
+  {# Mensajes ahora se muestran con SweetAlert desde cliente.html #}
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="fw-bold mb-0">Pedido #{{ pedido.id }}</h3>
+    <a class="btn btn-outline-secondary" href="{% url 'cliente:pedidos_activos' %}">Volver</a>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header">Información</div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-3"><strong>Destino:</strong> {{ pedido.cliente.comercio.nombre }}</div>
+        <div class="col-md-3"><strong>Fecha:</strong> {{ pedido.creado_en|date:"d/m/Y H:i" }}</div>
+        <div class="col-md-3"><strong>Estado:</strong> <span class="badge bg-secondary">{{ pedido.estado.estado|capfirst }}</span></div>
+        <div class="col-md-3"><strong>Observaciones:</strong> {{ pedido.observaciones|default:"-" }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-header">Productos</div>
+    <div class="card-body p-0">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Corte</th>
+            <th>Kilos</th>
+            <th>Frigorífico</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in detalles %}
+            {% with p=item.producto_id %}
+            <tr>
+              <td>#{{ p.id }}</td>
+              <td>{{ p.nombre }}</td>
+              <td>{{ p.kilos }}</td>
+              <td>{{ p.frigorificop }}</td>
+            </tr>
+            {% endwith %}
+          {% empty %}
+            <tr><td colspan="4" class="text-center py-3">Sin productos</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="card-footer d-flex justify-content-end gap-3">
+      <div>Total items: <strong>{{ total_items }}</strong></div>
+      <div>Total kilos: <strong>{{ total_kilos }}</strong></div>
+    </div>
+  </div>
+
+  {% if pedido.estado.estado == 'activo' %}
+  <form method="post" action="{% url 'cliente:pedido_marcar_entregado' pedido.id %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-success">Llegó todo bien</button>
+  </form>
+  <a class="btn btn-outline-danger mt-2" href="{% url 'cliente:pedido_reportar_problema' pedido.id %}">Llegó mal</a>
+  {% endif %}
+</div>
+{% endblock %}

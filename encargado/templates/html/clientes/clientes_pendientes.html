@@ -10,8 +10,8 @@
 
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="fw-bold">Clientes Pendientes</h3>
-        <small class="text-muted">Lista de usuarios pendientes de aprobación</small>
+        <h3 class="fw-bold">Clientes pendientes</h3>
+        <small class="text-muted">Usuarios a la espera de aprobación</small>
     </div>
 
     <!-- Tabla responsive -->
@@ -32,16 +32,8 @@
                     <td>{{ user.username }}</td>
                     <td>{{ user.email }}</td>
                     <td>
-                        <!-- Ver detalles -->
-                        <a href="{% url 'encargado:ver_detalles_clientes' user.id %}" class="btn btn-primary btn-sm">
-                            <i class="bi bi-eye"></i> Ver detalles
-                        </a>
-
-                        <!-- Aprobar -->
-                        <button class="btn btn-success btn-sm" 
-                                onclick="confirmarAccion('{% url 'encargado:aprobar_cliente' user.id %}', 'aprobar')">
-                            <i class="bi bi-check-circle"></i> Aprobar
-                        </button>
+                        <a href="{% url 'encargado:ver_detalles_clientes' user.id %}" class="btn btn-primary btn-sm">Ver detalles</a>
+                        <button class="btn btn-success btn-sm" onclick="confirmarAccion('{% url 'encargado:aprobar_cliente' user.id %}', 'aprobar')">Aprobar</button>
 
 
                     </td>
@@ -88,9 +80,9 @@ function confirmarAccion(url, tipo) {
     {% for message in messages %}
       <script>
         Swal.fire({
-        title: "{% if 'success' in message.tags %}Éxito{% elif 'warning' in message.tags %}Advertencia{% else %}Error{% endif %}",
+        title: "{% if 'success' in message.tags %}Éxito{% elif 'warning' in message.tags %}Advertencia{% else %}Información{% endif %}",
         text: "{{ message|escapejs }}",
-        icon: "{% if 'success' in message.tags %}success{% elif 'warning' in message.tags %}warning{% else %}error{% endif %}"
+        icon: "{% if 'success' in message.tags %}success{% elif 'warning' in message.tags %}warning{% else %}info{% endif %}"
         });
         </script>
     {% endfor %}
