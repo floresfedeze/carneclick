@@ -21,10 +21,11 @@
         {{error}}
     </form>
     <div class="pie">
-        <a href="">Terminos</a>
-        <a href="">Privacidad</a>
-        <a href="">Documentacion</a>
-        <a href="">Contactar con el soporte de CarneClick</a>
+        <a href="{% url 'serve_doc' 'terminos' %}" target="_blank" rel="noopener">Términos</a>
+        <a href="{% url 'serve_doc' 'politica' %}" target="_blank" rel="noopener">Privacidad</a>
+            <a href="{% url 'serve_doc' 'manual' %}" target="_blank" rel="noopener">Documentación</a>
+            <a href="{% url 'serve_doc' 'carpeta' %}" target="_blank" rel="noopener">Carpeta completa</a>
+            <a href="{% url 'contact_support' %}">Contactar con el soporte de CarneClick</a>
     </div>
 </div>
 {# Mensajes ahora se muestran desde base.html con SweetAlert #}

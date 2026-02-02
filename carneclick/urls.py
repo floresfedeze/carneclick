@@ -21,6 +21,8 @@ from carneclick import views
 
 urlpatterns = [
     path('', views.login_view, name='login_view'),
+    path('docs/<str:doc_name>/', views.serve_doc, name='serve_doc'),
+    path('contact/', views.contact_support, name='contact_support'),
     path('register/', views.register, name='register'),
     path('logout/', views.CerrarSesion, name='logout'),
     path('set-language/', views.set_language, name='set_language'),
