@@ -70,7 +70,7 @@ Si aparece algo como `Python 3.x.x`, está correctamente instalado.
 Clonar el repositorio:
 
 ```bash
-git clone https://github.com/TU-USUARIO/carneclick.git
+git clone https://github.com/floresfedeze/carneclick.git
 ```
 
 O descargar el ZIP desde GitHub y descomprimirlo.
@@ -113,19 +113,8 @@ pip install -r requirements.txt
 
 ---
 
-### 5. Configuración Importante
 
-En el archivo `settings.py` se agregó:
-
-```python
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0','*']
-```
-
-Esto permite ejecutar el sistema en entorno local sin errores de host.
-
----
-
-### 6. Migrar la Base de Datos
+### 5. Migrar la Base de Datos
 
 Ejecutar los siguientes comandos:
 
@@ -138,7 +127,7 @@ Esto crea automáticamente la base de datos SQLite.
 
 ---
 
-#### Crear Usuario Administrador
+#### 6. Crear Usuario Administrador
 
 ```bash
 python manage.py createsuperuser
@@ -152,7 +141,7 @@ Completar:
 
 ---
 
-### Ejecutar el Servidor
+### 7. Ejecutar el Servidor
 
 ```bash
 python manage.py runserver
@@ -178,8 +167,18 @@ http://127.0.0.1:8000/admin
 
 ## Administrador
 - Control total del sistema
-- Gestión de productos
 - Acceso al panel `/admin`
+
+## Encargado
+- Gestión y actualización de productos.
+- Control y seguimiento del stock.
+
+---
+
+## Cliente
+- Visualización de productos disponibles.
+- Gestión de su información personal.
+
 
 ---
 
