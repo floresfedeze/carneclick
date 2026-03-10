@@ -59,9 +59,9 @@
   {% if pedido.estado.estado == 'activo' %}
   <form method="post" action="{% url 'cliente:pedido_marcar_entregado' pedido.id %}">
     {% csrf_token %}
-    <button type="submit" class="btn btn-success">Llegó todo bien</button>
+    <button type="submit" class="btn btn-success">Confirmar pedido</button>
   </form>
-  <a class="btn btn-outline-danger mt-2" href="{% url 'cliente:pedido_reportar_problema' pedido.id %}">Llegó mal</a>
+  <a class="btn btn-outline-danger mt-2" href="{% url 'cliente:reportar_items_pedido' pedido.id %}">Llegó mal</a>
   {% endif %}
 </div>
 {% endblock %}

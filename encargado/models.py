@@ -327,6 +327,14 @@ class DetallePedido(models.Model):
         Productos, on_delete=models.CASCADE, default=1)
     pedido_id = models.ForeignKey(Pedido, on_delete=models.CASCADE, default=1)
     cantidad = models.PositiveIntegerField(default=1)
+    # Estado del item dentro del pedido (por ejemplo, si fue reportado como perdido/dañado)
+    ESTADO_ITEM = [
+        ('ok', 'Ok'),
+        ('perdido', 'Perdido'),
+        ('danado', 'Dañado'),
+    ]
+    estado_item = models.CharField(
+        max_length=10, choices=ESTADO_ITEM, default='ok')
     history = HistoricalRecords()
 
     def __str__(self):
@@ -348,6 +356,30 @@ class IncidenteEntrega(models.Model):
 
     def __str__(self):
         return f"Incidente #{self.id} - Pedido {self.pedido.id}"
+
+
+class IncidenteEntregaItem(models.Model):
+    incidente = models.ForeignKey(
+        IncidenteEntrega, on_delete=models.CASCADE, related_name='items')
+    detalle_pedido = models.ForeignKey(
+        DetallePedido, on_delete=models.SET_NULL, null=True, blank=True)
+    producto = models.ForeignKey(
+        Productos, on_delete=models.SET_NULL, null=True, blank=True)
+    cantidad_reportada = models.FloatField(null=True, blank=True)
+    TIPO_CHOICES = [
+        ('faltante', 'Faltante'),
+        ('danado', 'Dañado'),
+        ('equivocado', 'Equivocado'),
+        ('otro', 'Otro'),
+    ]
+    tipo = models.CharField(
+        max_length=20, choices=TIPO_CHOICES, default='faltante')
+    nota = models.TextField(null=True, blank=True)
+    creado_en = models.DateTimeField(default=timezone.now)
+    atendido = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f'IncidenteItem #{self.id} - Pedido {self.incidente.pedido.id}'
 
 
 class Carrito(models.Model):

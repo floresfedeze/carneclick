@@ -78,6 +78,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'carneclick.context_processors.ui_text',
+                'carneclick.context_processors.client_info',
             ],
         },
     },

@@ -20,7 +20,9 @@
 <nav class="navbar navbar-dark bg-dark fixed-top">
     <div class="container-fluid">
         <img src="{% static 'img/logo_cliente.png' %}" alt="Logo" height="40">
-
+        {% if comercio_nombre %}
+        <span class="text-white ms-3">{{ comercio_nombre }}</span>
+        {% endif %}
         <div class="d-flex align-items-center gap-3">
             <a href="{% url 'cliente:ver_carrito' %}" class="text-white text-decoration-none position-relative">
                 <img src="{% static 'img/carrito-de-compras.png' %}" height="24">
@@ -64,6 +66,7 @@
 
 
 
+            <a class="nav-link text-white px-4 py-3" href="{% url 'cliente:mi_perfil' %}">Mi perfil</a>
             <a class="nav-link text-white px-4 py-3" href="{% url 'logout' %}">Cerrar sesión</a>
 
             <hr class="text-secondary">

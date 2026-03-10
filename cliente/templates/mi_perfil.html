@@ -1,0 +1,26 @@
+{% extends 'cliente.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h2>Mi perfil</h2>
+        <form method="post">
+            {% csrf_token %}
+
+            <h5>Datos de usuario</h5>
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" name="email" class="form-control" value="{{ user_obj.email }}">
+            </div>
+
+            <h5>Datos personales</h5>
+            {{ cliente_form.as_p }}
+
+            <h5>Datos del comercio</h5>
+            {{ comercio_form.as_p }}
+
+            <button class="btn btn-primary" type="submit">Guardar</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

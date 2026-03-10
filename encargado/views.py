@@ -13,8 +13,27 @@ from django.shortcuts import get_object_or_404
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
 from django.db import transaction
-from django.db.models import Case, When, IntegerField, Q, Count, Sum
-from .models import Pedido_cliente, Comercio, Productos, Entrada, DetallePedido,  Pedido, Proveedor, Empleados, Carrito, ItemCarrito, Cliente, Viaje, Cortes, Frigorifico, Camiones, purge_expired_reservations
+from django.db.models import Case, When, IntegerField, Q, Count, Sum, Max
+from .models import (
+    Pedido_cliente,
+    Comercio,
+    Productos,
+    Entrada,
+    DetallePedido,
+    Pedido,
+    Proveedor,
+    Empleados,
+    Carrito,
+    ItemCarrito,
+    Cliente,
+    Viaje,
+    Cortes,
+    Frigorifico,
+    Camiones,
+    purge_expired_reservations,
+    IncidenteEntrega,
+    IncidenteEntregaItem,
+)
 from .forms import ProductoForm, PedidoForm, AgregarProductoForm, PedidoEditForm, PedidoNuevoForm
 from django.contrib.auth.models import User, Group
 from carneclick.decorators import group_required
@@ -117,6 +136,16 @@ def home(request):
     ult_pedidos_entregados = Pedido.objects.filter(estado__estado='entregado').select_related(
         'cliente__comercio').order_by('-creado_en')[:5]
 
+    # Incidentes recientes y pendientes
+    try:
+        incidentes_no_atendidos = IncidenteEntrega.objects.filter(
+            atendido=False).count()
+        ult_incidentes = IncidenteEntrega.objects.select_related(
+            'pedido', 'cliente').order_by('-creado_en')[:5]
+    except Exception:
+        incidentes_no_atendidos = 0
+        ult_incidentes = []
+
     context = {
         'pendientes_clientes': pendientes_clientes,
         'pedidos_activos': pedidos_activos,
@@ -133,6 +162,8 @@ def home(request):
         'home_frigo_resumen': home_frigo_resumen,
         'venc_fechas': venc_fechas,
         'pedidos_por_viaje_fecha': pedidos_por_viaje_fecha,
+        'incidentes_no_atendidos': incidentes_no_atendidos,
+        'ult_incidentes': ult_incidentes,
     }
     return render(request, 'html/encargado.html', context)
 
@@ -436,6 +467,25 @@ def generar_ticket_pdf(producto):
         codigo = getattr(producto, 'codigo', '') or ''
     except Exception:
         codigo = ''
+
+    # Si no hay `codigo` (previsualización antes de guardar), intentar generar
+    # un valor similar al que tendría un producto guardado para que el ticket
+    # muestre algo identificable.
+    if not codigo:
+        prod_id = getattr(producto, 'id', None)
+        if prod_id:
+            codigo = f"P{prod_id:06d}"
+        else:
+            # Producto aún no guardado: calcular próximo id disponible y usar
+            # el mismo formato que los productos guardados (P000001)
+            try:
+                max_id = Productos.objects.aggregate(
+                    max_id=Max('id'))['max_id'] or 0
+                next_id = int(max_id) + 1
+                codigo = f"P{next_id:06d}"
+            except Exception:
+                # Fallback a marca temporal
+                codigo = f"PREV-{datetime.now().strftime('%H%M%S')}"
     if codigo:
         c.setFont("Helvetica-Bold", 24)
         c.drawString(3 * cm, y, f"Código: {codigo}")
@@ -966,6 +1016,116 @@ def iniciar_pedido(request, pedido_pendiente_id):
 
 
 @group_required('Encargado')
+def boleta_pedido(request, pedido_id):
+    pedido = get_object_or_404(Pedido, pk=pedido_id)
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = (
+        f'inline; filename="remito_pedido_{pedido.id}.pdf"'
+    )
+
+    doc = SimpleDocTemplate(
+        response,
+        pagesize=A4,
+        rightMargin=30,
+        leftMargin=30,
+        topMargin=30,
+        bottomMargin=30
+    )
+
+    styles = getSampleStyleSheet()
+    elements = []
+
+    # ENCABEZADO
+    elements.append(Paragraph(
+        "<b>DOCUMENTO NO VÁLIDO COMO FACTURA</b>",
+        styles["Title"]
+    ))
+
+    elements.append(Spacer(1, 10))
+
+    comercio_origen = (
+        pedido.comercio_origen.nombre
+        if pedido.comercio_origen else "No especificado"
+    )
+
+    elements.append(Paragraph(
+        f"<b>Sucursal origen:</b> {comercio_origen}",
+        styles["Normal"]
+    ))
+
+    elements.append(Paragraph(
+        f"<b>Sucursal destino:</b> "
+        f"{pedido.cliente.comercio.nombre}",
+        styles["Normal"]
+    ))
+
+    elements.append(Paragraph(
+        f"<b>Observaciones:</b> {pedido.observaciones or ''}",
+        styles["Normal"]
+    ))
+
+    elements.append(Spacer(1, 10))
+
+    elements.append(Paragraph(
+        f"<b>REMITO Nº:</b> R{pedido.id:04d} &nbsp;&nbsp;"
+        f"<b>Fecha:</b> {datetime.now().strftime('%d/%m/%Y')}",
+        styles["Normal"]
+    ))
+
+    elements.append(Spacer(1, 15))
+
+    # TABLA DE PRODUCTOS
+    data = [
+        ["Código", "Descripción", "Kilos", "Cantidad"]
+    ]
+
+    for item in pedido.detallepedido_set.all():
+        prod = item.producto_id
+        kilos_val = getattr(prod, 'kilos', 0) or 0
+        try:
+            kilos_str = f"{float(kilos_val):.2f}"
+        except Exception:
+            kilos_str = str(kilos_val)
+        data.append([
+            str(getattr(prod, 'id', '')),
+            str(getattr(prod, 'nombre', '')),
+            str(kilos_str),
+            str(getattr(item, 'cantidad', ''))
+        ])
+
+    table = Table(data, colWidths=[60, 250, 80, 80])
+
+    table.setStyle(TableStyle([
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
+        ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
+        ("ALIGN", (2, 1), (-1, -1), "RIGHT"),
+        ("FONT", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
+    ]))
+
+    elements.append(table)
+
+    elements.append(Spacer(1, 40))
+
+    # FIRMAS
+    elements.append(Paragraph(
+        "Firma: ________________________________",
+        styles["Normal"]
+    ))
+
+    elements.append(Spacer(1, 15))
+
+    elements.append(Paragraph(
+        "Aclaración: ____________________________",
+        styles["Normal"]
+    ))
+
+    doc.build(elements)
+    return response
+
+
+@group_required('Encargado')
 def agregar_producto_por_id(request, pedido_id):
     pedido = get_object_or_404(Pedido, id=pedido_id)
     pedido_pendiente_id = request.session.get('pedido_pendiente_id')
@@ -1123,84 +1283,118 @@ def finalizar_pedido(request, pedido_id):
 
 @group_required('Encargado')
 def boleta_pedido(request, pedido_id):
-    """Genera un PDF (boleta) con la información del pedido usando ReportLab."""
+    """Genera un PDF (boleta) con estilo similar al ejemplo proporcionado."""
     pedido = get_object_or_404(Pedido, id=pedido_id)
     cliente = pedido.cliente
-    detalles = pedido.detallepedido_set.all()
+    detalles = pedido.detallepedido_set.select_related(
+        'producto_id', 'producto_id__nombre')
 
-    # Buffer de memoria para PDF
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
     width, height = A4
 
-    # Margen y coordenadas iniciales
-    x_margin = 3 * cm
-    y = height - 3 * cm
+    # Margenes
+    left = 2 * cm
+    right = width - 2 * cm
+    y = height - 2 * cm
 
-    # Encabezado
-    c.setFont("Helvetica-Bold", 16)
-    c.drawString(x_margin, y, f"Boleta del Pedido #{pedido.id}")
-    y -= 1 * cm
+    # Header central pequeño
+    c.setFont('Helvetica-Bold', 12)
+    c.drawCentredString(width / 2.0, y, 'DOCUMENTO NO VALIDO COMO FACTURA')
 
-    c.setFont("Helvetica", 11)
+    # Remito número arriba a la derecha
+    remito_str = f'REMITO N\u00ba  R{pedido.id:04d}'
+    c.setFont('Helvetica-Bold', 10)
+    c.drawRightString(right, y + 6, remito_str)
+
+    # Fecha arriba a la derecha (alineado bajo el remito)
     fecha_str = pedido.creado_en.strftime(
-        "%d/%m/%Y %H:%M") if pedido.creado_en else timezone.now().strftime("%d/%m/%Y %H:%M")
-    c.drawString(x_margin, y, f"Fecha: {fecha_str}")
-    y -= 0.7 * cm
+        '%d/%m/%Y') if pedido.creado_en else timezone.now().strftime('%d/%m/%Y')
+    c.setFont('Helvetica', 9)
+    c.drawRightString(right, y - 10, f'Fecha: {fecha_str}')
 
-    # Datos del cliente y sucursales
-    c.drawString(
-        x_margin, y, f"Cliente: {cliente.nombre} {cliente.apellido} • DNI: {cliente.dni}")
-    y -= 0.7 * cm
-    destino_nombre = getattr(cliente.comercio, 'nombre', '-')
-    destino_dir = getattr(cliente.comercio, 'direccion', '-')
-    c.drawString(
-        x_margin, y, f"Sucursal destino: {destino_nombre} • Dirección: {destino_dir}")
-    y -= 0.7 * cm
-    origen_nombre = getattr(pedido.comercio_origen, 'nombre', '-')
-    origen_dir = getattr(pedido.comercio_origen, 'direccion', '-')
-    c.drawString(
-        x_margin, y, f"Sucursal origen: {origen_nombre} • Dirección: {origen_dir}")
-    y -= 0.7 * cm
+    y -= 18
 
-    # Observaciones
-    c.drawString(x_margin, y, f"Observaciones: {pedido.observaciones or '-'}")
-    y -= 1 * cm
+    # Caja con sucursal origen / destino y observaciones (a la izquierda)
+    box_h = 48
+    c.setLineWidth(0.5)
+    c.rect(left, y - box_h, right - left, box_h, stroke=1, fill=0)
 
-    # Separador
-    c.line(x_margin, y, width - x_margin, y)
-    y -= 0.8 * cm
+    # Dentro de la caja: origen, destino, observaciones
+    inner_x = left + 6
+    inner_y = y - 12
+    origen_nombre = str(getattr(pedido.comercio_origen, 'nombre', '-'))
+    destino_nombre = str(getattr(cliente.comercio, 'nombre', '-'))
+    observ = pedido.observaciones or ''
 
-    # Tabla simple (Código, Descripción, Kilos, Frigorífico)
-    c.setFont("Helvetica-Bold", 12)
-    c.drawString(x_margin, y, "Código")
-    c.drawString(x_margin + 3.5 * cm, y, "Descripción")
-    c.drawString(x_margin + 11 * cm, y, "Kilos")
+    c.setFont('Helvetica-Bold', 9)
+    c.drawString(inner_x, inner_y, 'Sucursal Origen:')
+    c.setFont('Helvetica', 9)
+    c.drawString(inner_x + 90, inner_y, origen_nombre)
 
-    y -= 0.6 * cm
-    c.setFont("Helvetica", 11)
+    c.setFont('Helvetica-Bold', 9)
+    c.drawString(inner_x, inner_y - 14, 'Sucursal Destino:')
+    c.setFont('Helvetica', 9)
+    c.drawString(inner_x + 100, inner_y - 14, destino_nombre)
 
+    c.setFont('Helvetica-Bold', 9)
+    c.drawString(inner_x, inner_y - 28, 'Observaciones:')
+    c.setFont('Helvetica', 9)
+    c.drawString(inner_x + 90, inner_y - 28, observ)
+
+    y = y - box_h - 12
+
+    # Tabla: encabezado
+    col_codigo = left + 6
+    col_descrip = left + 60
+    col_kilos = right - 120
+    col_cant = right - 40
+
+    c.setFont('Helvetica-Bold', 10)
+    c.drawString(col_codigo, y, 'Codigo')
+    c.drawString(col_descrip, y, 'Descripcion')
+    c.drawRightString(col_kilos + 50, y, 'Kilos')
+    c.drawRightString(col_cant + 30, y, 'Cantidad')
+    y -= 12
+
+    c.setLineWidth(0.3)
+    # dibujar líneas de cabecera
+    c.line(left + 2, y + 8, right - 2, y + 8)
+
+    c.setFont('Helvetica', 9)
+    row_h = 12
     for item in detalles:
         if y < 3 * cm:
             c.showPage()
-            y = height - 3 * cm
-            c.setFont("Helvetica-Bold", 12)
-            c.drawString(x_margin, y, "Código")
-            c.drawString(x_margin + 3.5 * cm, y, "Descripción")
-            c.drawString(x_margin + 11 * cm, y, "Kilos")
-
-            y -= 0.6 * cm
-            c.setFont("Helvetica", 11)
-
+            y = height - 2 * cm
         prod = item.producto_id
+        codigo = str(getattr(prod, 'id', ''))
+        nombre = str(getattr(prod, 'nombre', ''))
+        # Añadir id interno entre paréntesis si se desea
+        codigo_val = getattr(
+            prod, 'codigo', '') or f"ID:{getattr(prod, 'id', '')}"
+        descripcion = f"{nombre} ({codigo_val})"
+        kilos = f"{getattr(prod, 'kilos', '')}"
+        cantidad = str(getattr(item, 'cantidad', ''))
 
-        c.drawString(x_margin, y, f"#{getattr(prod, 'id', '')}")
-        c.drawString(x_margin + 3.5 * cm, y, getattr(prod, 'nombre', '-'))
-        c.drawString(x_margin + 11 * cm, y, f"{getattr(prod, 'kilos', '-')}")
+        c.drawString(col_codigo, y, codigo)
+        # limitar descripción si es muy larga
+        c.drawString(col_descrip, y, descripcion[:80])
+        c.drawRightString(col_kilos + 50, y, kilos)
+        c.drawRightString(col_cant + 30, y, cantidad)
 
-        y -= 0.55 * cm
+        # línea separadora
+        c.line(left + 2, y - 3, right - 2, y - 3)
+        y -= row_h
 
-    # Footer
+    # Firmas
+    sig_y = 3.5 * cm
+    c.line(left + 40, sig_y, left + 180, sig_y)
+    c.drawString(left + 70, sig_y - 14, 'Firma')
+
+    c.line(right - 180, sig_y, right - 40, sig_y)
+    c.drawString(right - 150, sig_y - 14, 'Aclaracion')
+
     c.showPage()
     c.save()
 
@@ -1217,6 +1411,27 @@ def pedidos_preparados(request):
     # Filtrar pedidos cuyo estado (FK) tenga valor 'preparado'
     pedidos = Pedido.objects.filter(estado__estado='preparado')
     return render(request, 'html/pedidos/pedidos_preparados.html', {'pedidos': pedidos})
+
+
+@group_required('Encargado')
+def incidentes_list(request):
+    """Lista incidentes reportados por clientes."""
+    incidentes = IncidenteEntrega.objects.select_related(
+        'pedido', 'cliente').order_by('-creado_en')
+    return render(request, 'html/incidentes/list.html', {'incidentes': incidentes})
+
+
+@group_required('Encargado')
+def incidente_detail(request, incidente_id):
+    incidente = get_object_or_404(IncidenteEntrega, id=incidente_id)
+    items = incidente.items.select_related('detalle_pedido', 'producto').all()
+    if request.method == 'POST':
+        # marcar atendido
+        incidente.atendido = True
+        incidente.save(update_fields=['atendido'])
+        messages.success(request, 'Incidente marcado como atendido')
+        return redirect('encargado:incidentes_list')
+    return render(request, 'html/incidentes/detail.html', {'incidente': incidente, 'items': items})
 
 
 @group_required('Encargado')
@@ -1471,42 +1686,21 @@ def gestionar_viaje(request, viaje_id):
 
 @group_required('Encargado')
 def agregar_pedido_desde_pendiente(request, viaje_id):
-    """Agrega un pedido al viaje a partir de un Pedido_cliente pendiente."""
+    """Agrega un pedido al viaje a partir de un Pedido que esté en estado 'preparado'."""
     viaje = get_object_or_404(Viaje, id=viaje_id)
     if request.method != 'POST':
         return redirect('encargado:gestionar_viaje', viaje_id=viaje.id)
 
     form = AgregarPedidoPendienteForm(request.POST)
     if not form.is_valid():
-        messages.error(request, 'Selecciona un pedido pendiente válido')
+        messages.error(request, 'Selecciona un pedido preparado válido')
         return redirect('encargado:gestionar_viaje', viaje_id=viaje.id)
 
-    pedido_pendiente = form.cleaned_data['pedido_pendiente']
+    # Ahora seleccionamos un Pedido (modelo Pedido) que ya está en estado 'preparado'
+    pedido = form.cleaned_data['pedido_pendiente']
 
-    # Obtener el Cliente asociado al usuario del pedido pendiente
-    cliente = get_object_or_404(Cliente, user=pedido_pendiente.cliente)
-
-    # Estado preparado
-    from .models import EstadoPedidos
-    estado_preparado, _ = EstadoPedidos.objects.get_or_create(
-        estado='preparado')
-
-    # Crear o reutilizar Pedido vinculado a ese pedido_pendiente
-    pedido, created = Pedido.objects.get_or_create(
-        pedido_pendiente=pedido_pendiente,
-        defaults={
-            'cliente': cliente,
-            'comercio_origen': None,
-            'observaciones': '',
-            'viaje': viaje,
-            'user_id': request.user,
-            'creado_en': timezone.now(),
-            'estado': estado_preparado,
-        }
-    )
-
-    # Si el pedido ya existía, lo asociamos al viaje si aún no lo estaba
-    if not created and pedido.viaje_id != viaje.id:
+    # Asociar el pedido seleccionado al viaje si aún no está asociado
+    if pedido.viaje_id != viaje.id:
         pedido.viaje = viaje
         pedido.save(update_fields=['viaje'])
 
@@ -1547,6 +1741,51 @@ def agregar_pedido_manual_a_viaje(request, viaje_id):
 
 
 @group_required('Encargado')
+def cancelar_viaje(request, viaje_id):
+    """Cancela un viaje: devuelve pedidos asociados a estado 'preparado' y elimina el viaje."""
+    viaje = get_object_or_404(Viaje, id=viaje_id)
+    if request.method != 'POST':
+        return redirect('encargado:gestionar_viaje', viaje_id=viaje.id)
+
+    # Estado 'preparado' asegurado
+    from .models import EstadoPedidos, Estado
+    estado_preparado, _ = EstadoPedidos.objects.get_or_create(
+        estado='preparado')
+    estado_disponible, _ = Estado.objects.get_or_create(estado='disponible')
+
+    # Revertir pedidos asociados: quitar viaje y poner estado preparado
+    pedidos = Pedido.objects.filter(viaje=viaje)
+    for p in pedidos:
+        p.viaje = None
+        p.estado = estado_preparado
+        p.save(update_fields=['viaje', 'estado'])
+
+    # Liberar disponibilidad de chofer/ayudante/camion si estaban ocupados
+    try:
+        if viaje.chofer:
+            viaje.chofer.disponibilidad = estado_disponible
+            viaje.chofer.save(update_fields=['disponibilidad'])
+    except Exception:
+        pass
+    try:
+        if viaje.ayudante:
+            viaje.ayudante.disponibilidad = estado_disponible
+            viaje.ayudante.save(update_fields=['disponibilidad'])
+    except Exception:
+        pass
+    try:
+        if viaje.camion_viaje:
+            viaje.camion_viaje.disponibilidad = estado_disponible
+            viaje.camion_viaje.save(update_fields=['disponibilidad'])
+    except Exception:
+        pass
+
+    viaje.delete()
+    messages.warning(
+        request, f'Viaje #{viaje_id} cancelado y pedidos devueltos a "preparado"')
+    return redirect('encargado:viajes_activos')
+
+
 def iniciar_viaje(request, viaje_id):
     """Pone el viaje en marcha: pedidos a 'activo' y productos a 'de viaje'."""
     viaje = get_object_or_404(Viaje, id=viaje_id)

@@ -22,8 +22,11 @@ urlpatterns = [
     path("pedido/<int:pedido_id>/", views.pedido_detalle, name="pedido_detalle"),
     path("pedido/<int:pedido_id>/entregado/",
          views.pedido_marcar_entregado, name="pedido_marcar_entregado"),
+    path('pedido/<int:pedido_id>/reportar_items/',
+         views.reportar_items_pedido, name='reportar_items_pedido'),
     path("pedido/<int:pedido_id>/problema/",
          views.pedido_reportar_problema, name="pedido_reportar_problema"),
     path('registercliente/', views.register_cliente, name='register_cliente'),
     path("registercomercio/", views.register_comercio, name="register_comercio"),
+    path('mi-perfil/', views.mi_perfil, name='mi_perfil'),
 ]

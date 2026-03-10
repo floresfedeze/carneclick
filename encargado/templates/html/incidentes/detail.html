@@ -1,0 +1,31 @@
+{% extends 'base_encargado.html' %}
+{% block content %}
+<div class="container py-4">
+  <h3>Incidente #{{ incidente.id }} - Pedido #{{ incidente.pedido.id }}</h3>
+  <p><strong>Mensaje:</strong> {{ incidente.mensaje }}</p>
+  <p><strong>Cliente:</strong> {{ incidente.cliente.comercio.nombre }}</p>
+  <h5>Items reportados</h5>
+  <table class="table">
+    <thead><tr><th>Producto</th><th>Tipo</th><th>Cantidad</th><th>Nota</th><th>Atendido</th></tr></thead>
+    <tbody>
+      {% for it in items %}
+      <tr>
+        <td>{{ it.producto.nombre }}</td>
+        <td>{{ it.get_tipo_display }}</td>
+        <td>{{ it.cantidad_reportada }}</td>
+        <td>{{ it.nota }}</td>
+        <td>{% if it.atendido %}Sí{% else %}No{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <form method="post">
+    {% csrf_token %}
+    {% if not incidente.atendido %}
+    <button class="btn btn-primary">Marcar como atendido</button>
+    {% else %}
+    <a href="{% url 'encargado:incidentes_list' %}" class="btn btn-secondary">Volver</a>
+    {% endif %}
+  </form>
+</div>
+{% endblock %}

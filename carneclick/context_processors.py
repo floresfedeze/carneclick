@@ -88,3 +88,23 @@ def ui_text(request):
     return {
         'ui': en if lang == 'en' else es
     }
+
+
+def client_info(request):
+    cliente = None
+    comercio_nombre = ''
+    try:
+        if request.user and request.user.is_authenticated:
+            from encargado.models import Cliente as ClienteModel
+            cliente = ClienteModel.objects.filter(
+                user=request.user).select_related('comercio').first()
+            if cliente and getattr(cliente, 'comercio', None):
+                comercio_nombre = cliente.comercio.nombre
+    except Exception:
+        cliente = None
+        comercio_nombre = ''
+
+    return {
+        'cliente_obj': cliente,
+        'comercio_nombre': comercio_nombre,
+    }

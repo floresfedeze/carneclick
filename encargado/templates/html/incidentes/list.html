@@ -1,0 +1,26 @@
+{% extends 'base_encargado.html' %}
+{% block content %}
+<div class="container py-4">
+  <h3>Incidentes reportados</h3>
+  <table class="table">
+    <thead>
+      <tr><th>ID</th><th>Pedido</th><th>Cliente</th><th>Mensaje</th><th>Fecha</th><th>Atendido</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for inc in incidentes %}
+      <tr>
+        <td>{{ inc.id }}</td>
+        <td>#{{ inc.pedido.id }}</td>
+        <td>{{ inc.cliente.comercio.nombre }}</td>
+        <td>{{ inc.mensaje|truncatechars:80 }}</td>
+        <td>{{ inc.creado_en|date:'d/m/Y H:i' }}</td>
+        <td>{% if inc.atendido %}Sí{% else %}No{% endif %}</td>
+        <td><a href="{% url 'encargado:incidente_detail' inc.id %}" class="btn btn-sm btn-primary">Ver</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7">No hay incidentes</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

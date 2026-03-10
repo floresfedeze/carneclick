@@ -264,7 +264,45 @@ def pedido_marcar_entregado(request, pedido_id):
 
     # Finalizar viaje si existe
     if pedido.viaje_id:
-        Viaje.objects.filter(id=pedido.viaje_id).update(estado='finalizado')
+        # Si el viaje no tiene más pedidos en estado 'preparado', finalizarlo
+        viaje = Viaje.objects.filter(id=pedido.viaje_id).first()
+        if viaje:
+            # comprobar si existen otros pedidos en estado 'preparado' en este viaje
+            otros_preparados = Pedido.objects.filter(
+                viaje=viaje, estado__estado='preparado').exclude(id=pedido.id).exists()
+            if not otros_preparados:
+                viaje.estado = 'finalizado'
+                viaje.save(update_fields=['estado'])
+
+                # Liberar disponibilidad de chofer/ayudante/camion
+                try:
+                    from encargado.models import Estado
+                    estado_disponible, _ = Estado.objects.get_or_create(
+                        estado='disponible')
+                except Exception:
+                    estado_disponible = None
+
+                try:
+                    if viaje.chofer and estado_disponible:
+                        viaje.chofer.disponibilidad = estado_disponible
+                        viaje.chofer.save(update_fields=['disponibilidad'])
+                except Exception:
+                    pass
+
+                try:
+                    if viaje.ayudante and estado_disponible:
+                        viaje.ayudante.disponibilidad = estado_disponible
+                        viaje.ayudante.save(update_fields=['disponibilidad'])
+                except Exception:
+                    pass
+
+                try:
+                    if viaje.camion_viaje and estado_disponible:
+                        viaje.camion_viaje.disponibilidad = estado_disponible
+                        viaje.camion_viaje.save(
+                            update_fields=['disponibilidad'])
+                except Exception:
+                    pass
 
     messages.success(
         request, f"El pedido #{pedido.id} fue marcado como entregado.")
@@ -294,6 +332,56 @@ def pedido_reportar_problema(request, pedido_id):
 
     return render(request, 'cliente/pedido_reportar.html', {
         'pedido': pedido,
+    })
+
+
+@login_required
+def reportar_items_pedido(request, pedido_id):
+    """Permite al cliente seleccionar ítems del pedido y crear un incidente con detalle por ítem."""
+    pedido = get_object_or_404(Pedido, id=pedido_id)
+    # Asegurar que el usuario sea el dueño
+    if not pedido.cliente or pedido.cliente.user_id != request.user.id:
+        return redirect('cliente:pedidos_activos')
+
+    detalles = pedido.detallepedido_set.select_related('producto_id').all()
+
+    if request.method == 'POST':
+        mensaje = request.POST.get('mensaje', '').strip()
+        incidente = IncidenteEntrega.objects.create(
+            pedido=pedido,
+            cliente=Cliente.objects.get(user=request.user),
+            mensaje=mensaje,
+        )
+
+        # recorrer items y crear IncidenteEntregaItem y marcar detalle como perdido si fue reportado
+        from encargado.models import IncidenteEntregaItem
+        for item in detalles:
+            if request.POST.get(f'item_{item.id}_reported'):
+                tipo = request.POST.get(f'item_{item.id}_tipo', 'faltante')
+                cantidad_r = request.POST.get(
+                    f'item_{item.id}_cantidad') or item.cantidad
+                try:
+                    cantidad_r = float(cantidad_r)
+                except Exception:
+                    cantidad_r = item.cantidad
+                IncidenteEntregaItem.objects.create(
+                    incidente=incidente,
+                    detalle_pedido=item,
+                    producto=item.producto_id,
+                    cantidad_reportada=cantidad_r,
+                    tipo=tipo,
+                    nota='',
+                )
+                # marcar el detalle como perdido (estado_item)
+                item.estado_item = 'perdido'
+                item.save(update_fields=['estado_item'])
+
+        messages.success(request, 'Reporte enviado. El encargado lo revisará.')
+        return redirect('cliente:pedidos_activos')
+
+    return render(request, 'pedido_reportar_items.html', {
+        'pedido': pedido,
+        'detalles': detalles,
     })
 
 
@@ -331,4 +419,46 @@ def register_comercio(request):
 
     return render(request, "register_comercio.html", {
         "form": form
+    })
+
+
+@group_required('Cliente')
+def mi_perfil(request):
+    from .forms import ClienteForm, ComercioForm
+    from encargado.models import Cliente as ClienteModel
+
+    cliente = ClienteModel.objects.filter(
+        user=request.user).select_related('comercio').first()
+
+    if request.method == 'POST':
+        cliente_form = ClienteForm(request.POST, instance=cliente)
+        comercio_instance = cliente.comercio if cliente and getattr(
+            cliente, 'comercio', None) else None
+        comercio_form = ComercioForm(request.POST, instance=comercio_instance)
+
+        if cliente_form.is_valid() and comercio_form.is_valid():
+            comercio_saved = comercio_form.save()
+            cliente_obj = cliente_form.save(commit=False)
+            cliente_obj.user = request.user
+            cliente_obj.comercio = comercio_saved
+            cliente_obj.save()
+
+            # actualizar datos de usuario
+            user = request.user
+            user.email = request.POST.get('email', user.email)
+            user.first_name = request.POST.get('first_name', user.first_name)
+            user.last_name = request.POST.get('last_name', user.last_name)
+            user.save()
+
+            messages.success(request, 'Perfil actualizado correctamente.')
+            return redirect('cliente:home')
+    else:
+        cliente_form = ClienteForm(instance=cliente)
+        comercio_form = ComercioForm(
+            instance=(cliente.comercio if cliente else None))
+
+    return render(request, 'mi_perfil.html', {
+        'cliente_form': cliente_form,
+        'comercio_form': comercio_form,
+        'user_obj': request.user,
     })

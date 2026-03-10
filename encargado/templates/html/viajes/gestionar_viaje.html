@@ -7,6 +7,10 @@
     <h2 class="mb-0">Gestionar viaje #{{ viaje.id }}</h2>
     <div>
       <a href="{% url 'encargado:iniciar_viaje' viaje.id %}" class="btn btn-success">Iniciar viaje</a>
+      <form method="post" action="{% url 'encargado:cancelar_viaje' viaje.id %}" style="display:inline;" onsubmit="return confirm('Cancelar el viaje? Esto devolverá los pedidos asociados al estado "preparado".')">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline-danger ms-2">Cancelar viaje</button>
+      </form>
     </div>
   </div>
 
@@ -22,17 +26,43 @@
   </div>
 
   <div class="card mb-3">
-    <div class="card-header">Agregar desde pedido pendiente</div>
+    <div class="card-header">Agregar desde pedido preparado</div>
     <div class="card-body">
       <form method="post" action="{% url 'encargado:agregar_pedido_desde_pendiente' viaje.id %}">
         {% csrf_token %}
         <div class="row g-3 align-items-end">
           <div class="col-md-6">{{ form_pendiente.pedido_pendiente.label_tag }} {{ form_pendiente.pedido_pendiente }}</div>
-          <div class="col-md-6"><button type="submit" class="btn btn-primary">Agregar</button></div>
+          <div class="col-md-6 d-flex gap-2">
+            <button type="button" class="btn btn-outline-secondary" id="previewPedidoBtn">Previsualizar</button>
+            <button type="submit" class="btn btn-primary">Agregar</button>
+          </div>
         </div>
       </form>
     </div>
   </div>
+
+  <script>
+  // Botón para previsualizar el pedido pendiente seleccionado
+  document.addEventListener('DOMContentLoaded', () => {
+    const previewBtn = document.getElementById('previewPedidoBtn');
+    if (!previewBtn) return;
+    previewBtn.addEventListener('click', () => {
+      // Django suele crear el id del campo como 'id_pedido_pendiente'
+      const select = document.getElementById('id_pedido_pendiente') || document.querySelector('[name="pedido_pendiente"]');
+      if (!select) {
+        alert('No se encontró el selector de pedidos pendientes.');
+        return;
+      }
+      const val = select.value;
+      if (!val) {
+        alert('Selecciona un pedido pendiente para previsualizar');
+        return;
+      }
+      const url = `/encargado/pedidos_preparados/${val}/detalles/`;
+      window.open(url, '_blank');
+    });
+  });
+  </script>
 
   <div class="card mb-3">
     <div class="card-header">Crear pedido manual</div>
@@ -73,6 +103,7 @@
             <td>{{ p.detallepedido_set.count }}</td>
             <td>
               <a href="{% url 'encargado:editar_pedido_preparado' p.id %}" class="btn btn-sm btn-outline-primary">Editar</a>
+              <a href="{% url 'encargado:boleta_pedido' p.id %}" target="_blank" class="btn btn-sm btn-primary ms-1">Boleta PDF</a>
             </td>
           </tr>
         {% empty %}

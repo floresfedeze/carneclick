@@ -19,6 +19,7 @@
             <ul class="dropdown-menu dropdown-menu-end">
                 <li><a class="dropdown-item" href="{% url 'encargado:reporte_consolidado' %}">Consolidado</a></li>
                 <li><a class="dropdown-item" href="{% url 'encargado:reporte_stock' %}">Stock</a></li>
+                <li><a class="dropdown-item" href="{% url 'encargado:incidentes_list' %}">Incidentes</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="{% url 'encargado:reporte_vencimientos' %}">Por vencer</a></li>
             </ul>
@@ -26,10 +27,47 @@
     </div>
 
     <div class="row g-3 mb-3">
-        <div class="col-md-3"><div class="card shadow-sm"><div class="card-body"><div class="text-muted">Pedidos pendientes</div><div class="display-6">{{ pendientes_clientes }}</div></div></div></div>
-        <div class="col-md-3"><div class="card shadow-sm"><div class="card-body"><div class="text-muted">Pedidos activos</div><div class="display-6">{{ pedidos_activos }}</div></div></div></div>
-        <div class="col-md-3"><div class="card shadow-sm"><div class="card-body"><div class="text-muted">Viajes activos</div><div class="display-6">{{ viajes_activos }}</div></div></div></div>
-        <div class="col-md-3"><div class="card shadow-sm"><div class="card-body"><div class="text-muted">Stock disponible (kg)</div><div class="display-6">{{ stock_kg|floatformat:1 }}</div></div></div></div>
+        <div class="col-6 col-md-3 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted">Pedidos pendientes</div>
+                    <div class="display-6">{{ pendientes_clientes }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted">Pedidos activos</div>
+                    <div class="display-6">{{ pedidos_activos }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted">Viajes activos</div>
+                    <div class="display-6">{{ viajes_activos }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted">Stock disponible (kg)</div>
+                    <div class="display-6">{{ stock_kg|floatformat:1 }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted">Incidentes sin atender</div>
+                    <div class="display-6">{{ incidentes_no_atendidos }}</div>
+                    <div class="mt-2"><a href="{% url 'encargado:incidentes_list' %}" class="stretched-link">Ver incidentes</a></div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="card mb-3 shadow-sm">

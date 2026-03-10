@@ -100,7 +100,8 @@ class StockReservationAdmin(admin.ModelAdmin):
 
 
 class ViajeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'fecha', 'chofer', 'ayudante', 'camion_viaje')
+    list_display = ('id', 'fecha', 'chofer', 'ayudante',
+                    'camion_viaje', 'estado')
 
 
 class LoteAdmin(SimpleHistoryAdmin):

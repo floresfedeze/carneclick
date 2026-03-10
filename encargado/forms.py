@@ -42,12 +42,13 @@ class ViajeForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Solo mostrar empleados y camiones disponibles
+        # `chofer` debe listar solo empleados cuyo rol sea chofer y disponibles
         self.fields['chofer'].queryset = models.Empleados.objects.filter(
-            disponibilidad__estado='disponible'
+            disponibilidad__estado='disponible',
+            rol_empleado__nombre__icontains='chofer'
         )
-        self.fields['ayudante'].queryset = models.Empleados.objects.filter(
-            disponibilidad__estado='disponible'
-        )
+        # `ayudante` listar todos los empleados (sin filtrar por rol)
+        self.fields['ayudante'].queryset = models.Empleados.objects.all()
         self.fields['camion_viaje'].queryset = models.Camiones.objects.filter(
             disponibilidad__estado='disponible'
         )
@@ -55,8 +56,8 @@ class ViajeForm(forms.ModelForm):
 
 class AgregarPedidoPendienteForm(forms.Form):
     pedido_pendiente = forms.ModelChoiceField(
-        queryset=models.Pedido_cliente.objects.filter(estado="pendiente"),
-        label="Pedido pendiente",
+        queryset=models.Pedido.objects.filter(estado__estado='preparado'),
+        label="Pedido preparado",
         required=True,
-        help_text="Selecciona un pedido pendiente para convertirlo en pedido del viaje"
+        help_text="Selecciona un pedido preparado para agregarlo al viaje"
     )

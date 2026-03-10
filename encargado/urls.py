@@ -116,10 +116,16 @@ urlpatterns = [
     path('viajes/<int:viaje_id>/', views.gestionar_viaje, name='gestionar_viaje'),
     path('viajes/<int:viaje_id>/iniciar/',
          views.iniciar_viaje, name='iniciar_viaje'),
+    path('viajes/<int:viaje_id>/cancelar/',
+         views.cancelar_viaje, name='cancelar_viaje'),
     path('viajes/<int:viaje_id>/agregar_pendiente/',
          views.agregar_pedido_desde_pendiente, name='agregar_pedido_desde_pendiente'),
     path('viajes/<int:viaje_id>/agregar_manual/',
          views.agregar_pedido_manual_a_viaje, name='agregar_pedido_manual_a_viaje'),
+    # Incidentes
+    path('incidentes/', views.incidentes_list, name='incidentes_list'),
+    path('incidentes/<int:incidente_id>/',
+         views.incidente_detail, name='incidente_detail'),
     # Reportes
     path('reportes/stock/', views.reporte_stock, name='reporte_stock'),
     path('reportes/pedidos/', views.reporte_pedidos, name='reporte_pedidos'),

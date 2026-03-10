@@ -6,7 +6,7 @@ class EmpleadoForm(ModelForm):
     class Meta:
         model = models.Empleados
         fields = ['nombre', 'apellido', 'dni',
-                  'direccion', 'telefono', 'rol_empleado']
+                  'direccion', 'telefono', 'disponibilidad', 'rol_empleado']
 
 
 class CamionesForm(ModelForm):
