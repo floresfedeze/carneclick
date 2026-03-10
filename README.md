@@ -127,21 +127,8 @@ Esto crea automáticamente la base de datos SQLite.
 
 ---
 
-#### 6. Crear Usuario Administrador
 
-```bash
-python manage.py createsuperuser
-```
-
-Completar:
-
-- Usuario
-- Email
-- Contraseña
-
----
-
-### 7. Ejecutar el Servidor
+### 6. Ejecutar el Servidor
 
 ```bash
 python manage.py runserver
