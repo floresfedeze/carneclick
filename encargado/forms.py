@@ -6,7 +6,7 @@ from django import forms
 class ProductoForm(ModelForm):
     class Meta:
         model = models.Productos
-        fields = ['nombre', 'kilos', 'temperatura', 'frigorificop']
+        fields = ['nombre', 'kilos', 'cantidad', 'temperatura', 'frigorificop']
 
 
 class PedidoForm(forms.ModelForm):

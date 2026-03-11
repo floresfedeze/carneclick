@@ -135,4 +135,5 @@ urlpatterns = [
     path('reportes/por_vencer/', views.reporte_vencimientos,
          name='reporte_vencimientos'),
     path('chart/', views.get_chart, name='get_chart'),
+    path('notifications/', views.notifications_json, name='notifications_json'),
 ]

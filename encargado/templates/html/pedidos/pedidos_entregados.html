@@ -53,6 +53,7 @@
         <td data-label="Estado"><span class="badge bg-success">{{ pedido.estado.estado|capfirst }}</span></td>
         <td data-label="Opciones">
           <a href="{% url 'encargado:detalles_pedido_preparado' pedido.id %}" class="btn btn-sm btn-outline-primary">Detalles</a>
+          <a href="{% url 'encargado:boleta_pedido' pedido.id %}" target="_blank" class="btn btn-sm btn-secondary ms-1">Boleta PDF</a>
         </td>
       </tr>
       {% empty %}

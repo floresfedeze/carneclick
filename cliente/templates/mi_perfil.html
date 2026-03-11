@@ -1,26 +1,46 @@
 {% extends 'cliente.html' %}
+{% block title %}Mi perfil — CarneClick{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-8 offset-md-2">
-        <h2>Mi perfil</h2>
-        <form method="post">
-            {% csrf_token %}
-
-            <h5>Datos de usuario</h5>
-            <div class="mb-3">
-                <label class="form-label">Email</label>
-                <input type="email" name="email" class="form-control" value="{{ user_obj.email }}">
-            </div>
-
-            <h5>Datos personales</h5>
-            {{ cliente_form.as_p }}
-
-            <h5>Datos del comercio</h5>
-            {{ comercio_form.as_p }}
-
-            <button class="btn btn-primary" type="submit">Guardar</button>
-        </form>
-    </div>
+<div class="pg-header">
+    <div class="pg-title"><i class="bi bi-person-circle"></i> Mi perfil</div>
 </div>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="row g-3">
+        <div class="col-lg-6">
+            <div class="content-card h-100">
+                <p class="card-section-title">Datos de acceso</p>
+                <div class="p-3">
+                    <div class="mb-3">
+                        <label class="form-label small fw-600">Email</label>
+                        <input type="email" name="email" class="form-control" value="{{ user_obj.email }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="content-card h-100">
+                <p class="card-section-title">Datos personales</p>
+                <div class="p-3">
+                    {{ cliente_form.as_p }}
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="content-card">
+                <p class="card-section-title">Datos del comercio</p>
+                <div class="p-3">
+                    {{ comercio_form.as_p }}
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <button class="btn btn-primary px-4" type="submit">
+                <i class="bi bi-floppy me-1"></i> Guardar cambios
+            </button>
+        </div>
+    </div>
+</form>
 {% endblock %}

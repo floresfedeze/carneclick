@@ -32,7 +32,7 @@ class Tipo_frigorificoAdmin(admin.ModelAdmin):
 
 class ProductosAdmin(SimpleHistoryAdmin):
     list_display = ('id', 'codigo', 'nombre', 'kilos', 'reserved_kilos',
-                    'fecha_entrada', 'frigorificop', 'temperatura', 'estado')
+                    'fecha_entrada', 'frigorificop', 'temperatura', 'estado', )
     list_filter = ('estado', 'frigorificop', 'temperatura', 'nombre')
     search_fields = ('id', 'codigo', 'nombre__nombre')
     readonly_fields = ('reserved_kilos',)

@@ -50,9 +50,13 @@
 		<div class="card-body">
 			<form method="post" action="{% url 'encargado:agregar_producto_por_id' pedido.id %}" class="row g-3 align-items-end">
 				{% csrf_token %}
-				<div class="col-md-4">
+				<div class="col-md-3">
 					<label for="id_producto_id" class="form-label">ID del producto</label>
-					<input type="number" name="producto_id" id="id_producto_id" class="form-control" placeholder="Ej: 101" required>
+					<input type="number" name="producto_id" id="id_producto_id" class="form-control" placeholder="Ej: 101">
+				</div>
+				<div class="col-md-3">
+					<label for="id_cantidad_pedido" class="form-label">Cantidad preparar</label>
+					<input type="number" name="cantidad_pedido" id="id_cantidad_pedido" class="form-control" placeholder="Ej: 20" min="1" value="1">
 				</div>
 				<div class="col-md-3">
 					<button type="submit" class="btn btn-success w-100">Agregar</button>
@@ -74,7 +78,8 @@
 						<tr>
 							<th style="width: 100px">Código</th>
 							<th>Descripción</th>
-							<th style="width: 120px">Kilos</th>
+							<th style="width: 120px">Kilos (c/u)</th>
+							<th style="width: 100px">Cantidad</th>
 							<th>Frigorífico</th>
 							<th style="width: 140px">Acciones</th>
 						</tr>
@@ -85,6 +90,7 @@
 							<td>#{{ item.producto_id.id }}</td>
 							<td>{{ item.producto_id.nombre }}</td>
 							<td>{{ item.producto_id.kilos }} kg</td>
+							<td><strong>{{ item.producto_id.cantidad }}</strong></td>
 							<td>{{ item.producto_id.frigorificop.nombre }}</td>
 							<td>
 								<a href="{% url 'encargado:eliminar_producto_pedido' item.id %}" class="btn btn-outline-danger btn-sm" onclick="return confirm('Eliminar producto del pedido?')">Eliminar</a>

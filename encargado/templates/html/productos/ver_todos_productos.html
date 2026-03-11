@@ -66,7 +66,9 @@
       <tr>
         <th>ID</th>
         <th>Corte</th>
-        <th>Kilos</th>
+        <th>Kilos (c/u)</th>
+        <th>Cantidad</th>
+        <th>Kilos totales</th>
         <th>Cámara</th>
         <th>Estado</th>
         <th>Fecha de entrada</th>
@@ -81,7 +83,9 @@
           class="{% if estado == 'en stock' %}row-stock{% elif estado == 'preparado' %}row-preparado{% elif estado == 'de viaje' %}row-deviaje{% elif estado == 'entregado' %}row-entregado{% endif %}">
         <th data-label="ID">{{ producto.id }}</th>
         <td data-label="Nombre">{{ producto.nombre }}</td>
-        <td data-label="Kilos">{{ producto.kilos }} kg</td>
+        <td data-label="Kilos (c/u)">{{ producto.kilos }} kg</td>
+        <td data-label="Cantidad">{{ producto.cantidad }}</td>
+        <td data-label="Kilos totales">{% widthratio producto.kilos 1 producto.cantidad %} kg</td>
         <td data-label="Cámara">{{ producto.frigorificop }}</td>
         <td data-label="Estado">
           {% if estado == 'en stock' %}

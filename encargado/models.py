@@ -69,6 +69,8 @@ class Productos(models.Model):
     ]
     nombre = models.ForeignKey(Cortes, on_delete=models.CASCADE)
     kilos = models.FloatField()
+    # Cantidad de unidades con ese kilaje
+    cantidad = models.PositiveIntegerField(default=1)
     # Kilos reservados temporalmente para pedidos pendientes
     reserved_kilos = models.FloatField(default=0)
     # Código legible para identificación en pedidos y tickets

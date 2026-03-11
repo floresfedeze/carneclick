@@ -4,96 +4,274 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Cliente - Pedidos</title>
+    <title>{% block title %}CarneClick{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Fonts & Theme -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    <style>
+        :root {
+            --cc-dark: #111827;
+            --cc-dark-hover: #1f2937;
+            --cc-accent: #2563eb;
+            --cc-sidebar-w: 264px;
+            --cc-bar-h: 58px;
+            --cc-page-bg: #f1f5f9;
+        }
+        body { background: var(--cc-page-bg); }
+
+        /* ---- NAVBAR ---- */
+        .cc-bar {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1045;
+            height: var(--cc-bar-h);
+            background: var(--cc-dark);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 1.1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,.4);
+        }
+        .cc-bar .brand { display:flex; align-items:center; gap:.5rem; text-decoration:none; }
+        .cc-bar .brand-name { color:#f8fafc; font-weight:700; font-size:1.05rem; letter-spacing:.2px; }
+        .cc-bar .comercio-pill {
+            background:rgba(255,255,255,.1); color:#94a3b8;
+            font-size:.75rem; font-weight:500;
+            padding:.18em .75em; border-radius:99px;
+        }
+        .cc-bar .bar-btn {
+            color:#cbd5e1; background:none; border:none; padding:.3rem .4rem;
+            border-radius:.45rem; font-size:1.25rem; line-height:1;
+            text-decoration:none; display:flex; align-items:center;
+            transition: color .15s, background .15s; cursor:pointer; position:relative;
+        }
+        .cc-bar .bar-btn:hover { color:#fff; background:rgba(255,255,255,.1); }
+        .cc-bar .cart-dot {
+            position:absolute; top:1px; right:1px;
+            background:#ef4444; color:#fff;
+            font-size:.6rem; font-weight:700; line-height:1;
+            padding:.15em .38em; border-radius:99px; min-width:1.3em; text-align:center;
+        }
+        .cc-bar .bar-actions { display:flex; align-items:center; gap:.3rem; }
+
+        /* ---- SIDEBAR ---- */
+        .cc-sidebar {
+            background: var(--cc-dark) !important;
+            width: var(--cc-sidebar-w) !important;
+            border-right: none !important;
+        }
+        .cc-sidebar .offcanvas-header {
+            background: var(--cc-dark);
+            border-bottom: 1px solid rgba(255,255,255,.07);
+            padding: 1rem 1.15rem .9rem;
+        }
+        .cc-sidebar .offcanvas-title { color:#f8fafc; font-weight:700; font-size:1rem; }
+        .cc-sidebar .sub-title { color:#64748b; font-size:.72rem; margin-top:.2rem; }
+        .cc-sidebar .sb-section {
+            color:#475569; font-size:.68rem; font-weight:700;
+            letter-spacing:.08em; text-transform:uppercase;
+            padding:.9rem 1.1rem .3rem;
+        }
+        .cc-sidebar .nav-link {
+            color:#94a3b8; padding:.58rem 1rem;
+            border-radius:.5rem; margin:.03rem .4rem;
+            font-size:.85rem; font-weight:500;
+            display:flex; align-items:center; gap:.6rem;
+            text-decoration:none; transition: background .12s, color .12s;
+        }
+        .cc-sidebar .nav-link i { font-size:1rem; width:1.2rem; text-align:center; flex-shrink:0; }
+        .cc-sidebar .nav-link .link-badge { margin-left:auto; }
+        .cc-sidebar .nav-link:hover, .cc-sidebar .nav-link:focus { background:rgba(255,255,255,.06); color:#f1f5f9; }
+        .cc-sidebar hr { border-color:rgba(255,255,255,.07); margin:.4rem .8rem; }
+
+        /* ---- MAIN ---- */
+        .cc-main { padding-top: calc(var(--cc-bar-h) + 1.25rem); padding-bottom: 2.5rem; min-height:100vh; }
+
+        /* ---- PAGE HEADER ---- */
+        .pg-header {
+            display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.5rem;
+            background:#fff; border-radius:.8rem; padding:.85rem 1.15rem;
+            margin-bottom:1.15rem; box-shadow:0 1px 4px rgba(0,0,0,.06);
+        }
+        .pg-header .pg-title { font-size:1.1rem; font-weight:700; margin:0; display:flex; align-items:center; gap:.5rem; }
+        .pg-header .pg-title i { color: var(--cc-accent); }
+        .pg-header .breadcrumb { margin:0; font-size:.77rem; }
+
+        /* ---- METRIC CARDS ---- */
+        .metric-card {
+            background:#fff; border-radius:.85rem;
+            padding:1rem 1.15rem; height:100%;
+            box-shadow:0 1px 5px rgba(0,0,0,.07);
+            display:flex; align-items:center; gap:.9rem;
+            border:1px solid #f1f5f9; text-decoration:none; color:inherit;
+            transition: box-shadow .15s, transform .12s;
+        }
+        .metric-card:hover { box-shadow:0 4px 14px rgba(0,0,0,.11); transform:translateY(-1px); color:inherit; }
+        .metric-icon {
+            width:2.75rem; height:2.75rem; border-radius:.7rem;
+            display:flex; align-items:center; justify-content:center;
+            font-size:1.3rem; flex-shrink:0;
+        }
+        .metric-value { font-size:1.55rem; font-weight:700; line-height:1.1; }
+        .metric-label { font-size:.74rem; color:#64748b; font-weight:500; margin-top:.1rem; }
+        .metric-cta { font-size:.72rem; color:var(--cc-accent); font-weight:600; margin-top:.3rem; }
+
+        /* ---- TABLE CARD ---- */
+        .tbl-card { background:#fff; border-radius:.85rem; box-shadow:0 1px 5px rgba(0,0,0,.07); overflow:hidden; }
+        .tbl-card-head {
+            padding:.8rem 1.15rem; font-weight:600; font-size:.85rem;
+            border-bottom:1px solid #f1f5f9;
+            display:flex; align-items:center; justify-content:space-between; gap:.5rem; flex-wrap:wrap;
+        }
+        .tbl-card .table { margin:0; }
+        .tbl-card .table thead th {
+            background:#f8fafc; border-color:#f1f5f9;
+            font-size:.73rem; font-weight:700; color:#475569;
+            text-transform:uppercase; letter-spacing:.05em; padding:.6rem 1rem;
+        }
+        .tbl-card .table tbody td, .tbl-card .table tbody th {
+            padding:.65rem 1rem; vertical-align:middle;
+            border-color:#f1f5f9; font-size:.85rem;
+        }
+        .tbl-card .table tbody tr:last-child td,
+        .tbl-card .table tbody tr:last-child th { border-bottom:none; }
+
+        /* ---- SEARCH ---- */
+        .search-wrap { position:relative; }
+        .search-wrap .bi { position:absolute; left:.75rem; top:50%; transform:translateY(-50%); color:#94a3b8; }
+        .search-wrap input { padding-left:2.2rem; }
+
+        /* ---- CONTENT CARD ---- */
+        .content-card {
+            background:#fff; border-radius:.85rem;
+            box-shadow:0 1px 5px rgba(0,0,0,.07);
+            border:1px solid #f1f5f9;
+        }
+        .content-card .card-section-title {
+            font-size:.8rem; font-weight:700; color:#475569;
+            text-transform:uppercase; letter-spacing:.05em;
+            padding:.7rem 1.15rem; border-bottom:1px solid #f1f5f9; margin:0;
+        }
+
+        /* ---- STATUS BADGES ---- */
+        .badge-pendiente { background:#fef9c3 !important; color:#92400e !important; }
+        .badge-activo    { background:#dbeafe !important; color:#1e40af !important; }
+        .badge-preparado { background:#e0f2fe !important; color:#075985 !important; }
+        .badge-entregado { background:#dcfce7 !important; color:#15803d !important; }
+
+        /* ---- EMPTY STATE ---- */
+        .empty-state { padding:2.5rem 1rem; text-align:center; color:#94a3b8; }
+        .empty-state i { font-size:2.5rem; display:block; margin-bottom:.6rem; }
+
+        /* ---- UTILS ---- */
+        .fw-500 { font-weight:500; }
+        .fw-600 { font-weight:600; }
+        .fw-700 { font-weight:700; }
+
+        @media (max-width:575.98px) {
+            .cc-main { padding-top: calc(var(--cc-bar-h) + .75rem); }
+            .metric-value { font-size:1.3rem; }
+            .pg-header .pg-title { font-size:1rem; }
+        }
+    </style>
+    {% block head %}{% endblock %}
 </head>
+<body>
 
-<body class="bg-light">
-
-<!-- NAVBAR SUPERIOR -->
-<nav class="navbar navbar-dark bg-dark fixed-top">
-    <div class="container-fluid">
-        <img src="{% static 'img/logo_cliente.png' %}" alt="Logo" height="40">
-        {% if comercio_nombre %}
-        <span class="text-white ms-3">{{ comercio_nombre }}</span>
-        {% endif %}
-        <div class="d-flex align-items-center gap-3">
-            <a href="{% url 'cliente:ver_carrito' %}" class="text-white text-decoration-none position-relative">
-                <img src="{% static 'img/carrito-de-compras.png' %}" height="24">
-                {% if carrito %}
-                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                    {{ carrito.total_items }}
-                </span>
-                {% endif %}
-            </a>
-
-            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarCliente">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-        </div>
+<!-- BARRA SUPERIOR -->
+<header class="cc-bar">
+    <a href="{% url 'cliente:home' %}" class="brand">
+        <img src="{% static 'img/logo_cliente.png' %}" alt="CarneClick" height="34">
+        <span class="brand-name d-none d-sm-inline">CarneClick</span>
+    </a>
+    {% if comercio_nombre %}
+    <span class="comercio-pill d-none d-md-inline">{{ comercio_nombre }}</span>
+    {% endif %}
+    <div class="bar-actions">
+        <a href="{% url 'cliente:ver_carrito' %}" class="bar-btn" title="Mi carrito">
+            <i class="bi bi-cart3"></i>
+            {% if carrito and carrito.total_items > 0 %}
+            <span class="cart-dot">{{ carrito.total_items }}</span>
+            {% endif %}
+        </a>
+        <a href="{% url 'cliente:mi_perfil' %}" class="bar-btn d-none d-sm-flex" title="Mi perfil">
+            <i class="bi bi-person-circle"></i>
+        </a>
+        <button class="bar-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarCliente" aria-label="Abrir menú">
+            <i class="bi bi-list" style="font-size:1.45rem"></i>
+        </button>
     </div>
-</nav>
+</header>
 
-<!-- SIDEBAR CLIENTE -->
-<div class="offcanvas offcanvas-start bg-dark text-white" tabindex="-1" id="sidebarCliente">
+<!-- SIDEBAR -->
+<div class="offcanvas offcanvas-start cc-sidebar" tabindex="-1" id="sidebarCliente">
     <div class="offcanvas-header">
-        <h5 class="offcanvas-title">Menú</h5>
+        <div>
+            <div class="offcanvas-title">
+                <i class="bi bi-grid-1x2-fill me-1" style="color:#3b82f6"></i> Menú
+            </div>
+            {% if comercio_nombre %}
+            <div class="sub-title">{{ comercio_nombre }}</div>
+            {% endif %}
+        </div>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
     </div>
-
-    <div class="offcanvas-body p-0">
-        <nav class="nav flex-column">
-
-            <a class="nav-link text-white px-4 py-3" href="{% url 'cliente:home' %}">Inicio</a>
-
-            <!-- Pedidos -->
-            <a class="nav-link text-white px-4 py-3" data-bs-toggle="collapse" href="#menuPedidos">Pedidos</a>
-            <div class="collapse ps-4" id="menuPedidos">
-                <a class="nav-link text-white" href="{% url 'cliente:nuevo_pedido'%}">Nuevo pedido</a>
-                
-                <a class="nav-link text-white" href="{% url 'cliente:pedidos_activos'%}">Activos</a>
-                <a class="nav-link text-white" href="{% url 'cliente:pedidos_pendientes_cliente'%}">Pendientes</a>
-                <a class="nav-link text-white" href="{% url 'cliente:entregas'%}">Finalizados</a>
-            </div>
-            
-            <a class="nav-link text-white px-4 py-3" href="{% url 'cliente:ver_carrito'%}">Mi carrito</a>
-
-
-
-            <a class="nav-link text-white px-4 py-3" href="{% url 'cliente:mi_perfil' %}">Mi perfil</a>
-            <a class="nav-link text-white px-4 py-3" href="{% url 'logout' %}">Cerrar sesión</a>
-
-            <hr class="text-secondary">
-
-            <a class="nav-link text-white px-4 py-3" href="#">Ayuda</a>
-
+    <div class="offcanvas-body d-flex flex-column" style="padding:0">
+        <nav class="nav flex-column" style="padding-top:.3rem">
+            <a class="nav-link" href="{% url 'cliente:home' %}">
+                <i class="bi bi-house-door"></i> Inicio
+            </a>
+            <div class="sb-section">Pedidos</div>
+            <a class="nav-link" href="{% url 'cliente:nuevo_pedido' %}">
+                <i class="bi bi-plus-circle"></i> Nuevo pedido
+            </a>
+            <a class="nav-link" href="{% url 'cliente:pedidos_activos' %}">
+                <i class="bi bi-truck"></i> Activos
+            </a>
+            <a class="nav-link" href="{% url 'cliente:pedidos_pendientes_cliente' %}">
+                <i class="bi bi-hourglass-split"></i> Pendientes
+            </a>
+            <a class="nav-link" href="{% url 'cliente:entregas' %}">
+                <i class="bi bi-check2-circle"></i> Finalizados
+            </a>
+            <hr>
+            <div class="sb-section">Cuenta</div>
+            <a class="nav-link" href="{% url 'cliente:ver_carrito' %}">
+                <i class="bi bi-cart3"></i> Mi carrito
+                {% if carrito and carrito.total_items > 0 %}
+                <span class="badge bg-danger rounded-pill link-badge">{{ carrito.total_items }}</span>
+                {% endif %}
+            </a>
+            <a class="nav-link" href="{% url 'cliente:mi_perfil' %}">
+                <i class="bi bi-person"></i> Mi perfil
+            </a>
+            <a class="nav-link" href="{% url 'logout' %}">
+                <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+            </a>
+            <hr>
+            <a class="nav-link" href="#">
+                <i class="bi bi-question-circle"></i> Ayuda
+            </a>
         </nav>
     </div>
 </div>
 
-<!-- CONTENIDO -->
-<main class="container pt-5 mt-4">
-    {% block content %}
-    {% endblock %}
+<!-- CONTENIDO PRINCIPAL -->
+<main class="cc-main">
+    <div class="container-lg px-3 px-md-4">
+        {% block content %}{% endblock %}
+    </div>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 {% if messages %}
 {% for message in messages %}
-<script>
-        Swal.fire({
-                title: "{% if 'success' in message.tags %}Éxito{% elif 'warning' in message.tags %}Advertencia{% else %}Error{% endif %}",
-                text: "{{ message|escapejs }}",
-                icon: "{% if 'success' in message.tags %}success{% elif 'warning' in message.tags %}warning{% else %}error{% endif %}"
-        });
-    </script>
+<script>Swal.fire({
+    title: "{% if 'success' in message.tags %}¡Éxito!{% elif 'warning' in message.tags %}Atención{% else %}Error{% endif %}",
+    text: "{{ message|escapejs }}",
+    icon: "{% if 'success' in message.tags %}success{% elif 'warning' in message.tags %}warning{% else %}error{% endif %}",
+    confirmButtonColor: "#2563eb",
+    {% if 'success' in message.tags %}timer: 2200, timerProgressBar: true,{% endif %}
+});</script>
 {% endfor %}
 {% endif %}
 </body>

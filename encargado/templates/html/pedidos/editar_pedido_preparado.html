@@ -69,7 +69,8 @@
                 <tr>
                   <th>Código</th>
                   <th>Corte</th>
-                  <th>Kilos</th>
+                  <th>Kilos (c/u)</th>
+                  <th>Cantidad</th>
                   <th>Frigorífico</th>
                   <th>Estado</th>
                   <th style="width:110px;">Acciones</th>
@@ -82,6 +83,7 @@
                   <th>#{{ p.id }}</th>
                   <td>{{ p.nombre }}</td>
                   <td>{{ p.kilos }}</td>
+                  <td><strong>{{ p.cantidad }}</strong></td>
                   <td>{{ p.frigorificop }}</td>
                   <td>
                     {% if p.estado == 'en stock' %}
@@ -119,7 +121,11 @@
                   <label for="id_producto_id" class="form-label">Codigo del producto</label>
                   {{ agregar_form.producto_id }}
                 </div>
-                <div class="col-md-8">
+                <div class="col-md-3">
+                  <label for="id_cantidad_pedido" class="form-label">Cantidad preparar</label>
+                  <input type="number" name="cantidad_pedido" id="id_cantidad_pedido" class="form-control" min="1" value="1" placeholder="Ej: 20">
+                </div>
+                <div class="col-md-5">
                   <button type="submit" class="btn btn-success">Agregar al pedido</button>
                   <small class="text-muted ms-2">Solo acepta productos en estado "En stock"</small>
                 </div>

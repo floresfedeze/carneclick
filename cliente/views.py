@@ -3,7 +3,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from carneclick.decorators import group_required
 from .forms import ClienteForm, ComercioForm
 from encargado.models import Cortes, Productos, Carrito, ItemCarrito, Pedido_cliente, PedidoItem, Pedido, Cliente, EstadoPedidos, IncidenteEntrega, Viaje
-from django.db.models import Count
+from django.db.models import Count, Sum, F, FloatField
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import logout
@@ -62,9 +62,16 @@ def home(request):
 @group_required('Cliente')
 @group_required('Cliente')
 def nuevo_pedido(request):
-    cortes = Cortes.objects.annotate(
-        stock=Count('productos'),
+    # Calcular kilos disponibles por corte (kilos - reserved_kilos)
+    cortes_qs = Cortes.objects.annotate(
+        total_kilos=Sum('productos__kilos'),
+        total_reserved=Sum('productos__reserved_kilos')
     )
+    cortes = list(cortes_qs)
+    for c in cortes:
+        total = float(getattr(c, 'total_kilos', 0) or 0)
+        reserved = float(getattr(c, 'total_reserved', 0) or 0)
+        c.stock = max(0.0, total - reserved)
 
     # Asegurar que el template tenga el `carrito` para mostrar la insignia en la navbar
     carrito = None
@@ -90,8 +97,11 @@ def agregar_carrito(request, corte_id):
 
     cantidad = int(request.POST.get("cantidad", 1))
 
-    # stock dinámico
-    stock = Productos.objects.filter(nombre=corte).count()
+    # stock dinámico (kilos disponibles sumados)
+    agg = Productos.objects.filter(nombre=corte).aggregate(
+        total=Sum(F('kilos') - F('reserved_kilos'), output_field=FloatField())
+    )
+    stock = int(agg.get('total') or 0)
 
     if cantidad > stock:
         return redirect("nuevo_pedido")

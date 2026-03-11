@@ -1,69 +1,70 @@
 {% extends "cliente.html" %}
 {% load static %}
-
+{% block title %}Pedidos pendientes — CarneClick{% endblock %}
 {% block content %}
-<div class="container-fluid my-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3 class="fw-bold mb-0">Pedidos pendientes</h3>
-    <span class="badge bg-warning text-dark">{{ pedidos|length }} pendientes</span>
-  </div>
 
-  {% if pedidos %}
-    <!-- Tabla para pantallas medianas y grandes -->
-    <div class="table-responsive shadow-sm rounded bg-white p-3 d-none d-md-block">
-      <table class="table table-hover align-middle">
-        <thead class="table-dark">
-          <tr>
-            <th>#</th>
-            <th>Fecha</th>
-            <th>Estado</th>
-            <th>Detalle</th>
-          </tr>
-        </thead>
-        <tbody>
-        {% for p in pedidos %}
-          <tr>
-            <td>{{ p.id }}</td>
-            <td>{{ p.fecha|date:"d/m/Y H:i" }}</td>
-            <td><span class="badge bg-warning text-dark">Pendiente</span></td>
-            <td>
-              <ul class="mb-0">
-                {% for item in p.items.all %}
-                  <li>{{ item.corte.nombre }} — <strong>{{ item.cantidad }}</strong></li>
-                {% endfor %}
-              </ul>
-            </td>
-          </tr>
-        {% endfor %}
-        </tbody>
-      </table>
+<div class="pg-header">
+    <div class="pg-title"><i class="bi bi-hourglass-split"></i> Pedidos pendientes</div>
+    <span class="badge badge-pendiente rounded-pill" style="font-size:.8rem">{{ pedidos|length }} pendientes</span>
+</div>
+
+{% if pedidos %}
+<!-- Desktop -->
+<div class="tbl-card d-none d-md-block">
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead><tr>
+                <th>#</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th>Detalle</th>
+            </tr></thead>
+            <tbody>
+            {% for p in pedidos %}
+            <tr>
+                <td class="fw-600">#{{ p.id }}</td>
+                <td class="text-muted small">{{ p.fecha|date:"d/m/Y H:i" }}</td>
+                <td><span class="badge badge-pendiente">Pendiente</span></td>
+                <td>
+                    {% for item in p.items.all %}
+                    <span class="badge bg-light text-dark border me-1">{{ item.corte.nombre }} &times;{{ item.cantidad }}</span>
+                    {% endfor %}
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
     </div>
+</div>
 
-    <!-- Tarjetas para pantallas pequeñas -->
-    <div class="d-md-none">
-      <div class="row g-3">
+<!-- Mobile -->
+<div class="d-md-none">
+    <div class="row g-3">
         {% for p in pedidos %}
         <div class="col-12">
-          <div class="card shadow-sm">
-            <div class="card-body">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <h6 class="mb-0">Pedido #{{ p.id }}</h6>
-                <span class="badge bg-warning text-dark">Pendiente</span>
-              </div>
-              <div class="text-muted mb-2">{{ p.fecha|date:"d/m/Y H:i" }}</div>
-              <ul class="mb-0 small">
+            <div class="content-card p-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-700">#{{ p.id }}</span>
+                    <span class="badge badge-pendiente">Pendiente</span>
+                </div>
+                <div class="small text-muted mb-2">{{ p.fecha|date:"d/m/Y H:i" }}</div>
+                <div class="d-flex flex-wrap gap-1">
                 {% for item in p.items.all %}
-                  <li>{{ item.corte.nombre }} — <strong>{{ item.cantidad }}</strong></li>
+                <span class="badge bg-light text-dark border">{{ item.corte.nombre }} &times;{{ item.cantidad }}</span>
                 {% endfor %}
-              </ul>
+                </div>
             </div>
-          </div>
         </div>
         {% endfor %}
-      </div>
     </div>
-  {% else %}
-    <div class="alert alert-info">No tenés pedidos pendientes.</div>
-  {% endif %}
 </div>
+
+{% else %}
+<div class="content-card">
+    <div class="empty-state">
+        <i class="bi bi-hourglass"></i>
+        <p>No tenés pedidos pendientes.</p>
+    </div>
+</div>
+{% endif %}
 {% endblock %}

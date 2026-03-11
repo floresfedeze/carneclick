@@ -1,23 +1,41 @@
 {% extends "cliente.html" %}
+{% block title %}Reportar problema — CarneClick{% endblock %}
 {% block content %}
-<div class="container my-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3 class="fw-bold mb-0">Pedido #{{ pedido.id }} - Reportar problema</h3>
-    <a class="btn btn-outline-secondary" href="{% url 'cliente:pedido_detalle' pedido.id %}">Volver</a>
-  </div>
 
-  <div class="card">
-    <div class="card-header">Mensaje para el encargado</div>
-    <div class="card-body">
-      <form method="post">
-        {% csrf_token %}
-        <div class="mb-3">
-          <label class="form-label">Describe el problema</label>
-          <textarea name="mensaje" class="form-control" rows="4" placeholder="Ej: faltó un producto, hubo daño, etc."></textarea>
+<div class="pg-header">
+    <div class="pg-title"><i class="bi bi-exclamation-triangle text-danger"></i> Reportar problema</div>
+    <a href="{% url 'cliente:pedido_detalle' pedido.id %}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Volver
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="content-card">
+            <p class="card-section-title">Pedido #{{ pedido.id }} — Mensaje para el encargado</p>
+            <div class="p-3">
+                <div class="alert alert-warning small mb-3 d-flex align-items-start gap-2">
+                    <i class="bi bi-info-circle-fill flex-shrink-0 mt-1"></i>
+                    <span>Describí brevemente el problema (faltante, daño, producto incorrecto, etc.). El encargado recibirá tu mensaje.</span>
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-600">Descripción del problema</label>
+                        <textarea name="mensaje" class="form-control" rows="5"
+                                  placeholder="Ej: Faltó un producto, llegó en mal estado, etc."></textarea>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-send me-1"></i> Enviar reporte
+                        </button>
+                        <a href="{% url 'cliente:pedido_detalle' pedido.id %}" class="btn btn-outline-secondary">
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
         </div>
-        <button type="submit" class="btn btn-danger">Enviar</button>
-      </form>
     </div>
-  </div>
 </div>
 {% endblock %}

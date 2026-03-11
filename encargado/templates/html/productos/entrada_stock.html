@@ -40,7 +40,9 @@
                     <thead>
                         <tr>
                             <th>Producto</th>
-                            <th>Kilos</th>
+                            <th>Kilos (c/u)</th>
+                            <th>Cantidad</th>
+                            <th>Kilos totales</th>
                             <th>Lote</th>
                             <th>Vencimiento</th>
                         </tr>
@@ -50,6 +52,8 @@
                             <tr>
                                 <td>{{ p.nombre }}</td>
                                 <td>{{ p.kilos }}</td>
+                                <td>{{ p.cantidad }}</td>
+                                <td>{{ p.kilos|floatformat:2 }} × {{ p.cantidad }} = {% widthratio p.kilos 1 p.cantidad %} kg</td>
                                 <td>{{ p.fecha_entrada.numero_lote|default:"-" }}</td>
                                 <td>{{ p.fecha_vencimiento|date:"d/m/Y" }}</td>
                             </tr>

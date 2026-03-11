@@ -1,12 +1,70 @@
 {% extends "cliente.html" %}
 {% load static %}
+{% block title %}Inicio — CarneClick{% endblock %}
 
 {% block content %}
-<div class="container my-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3 class="fw-bold mb-0">Panel del cliente</h3>
-    <small class="text-muted">Resumen y accesos rápidos</small>
-  </div>
+<div class="pg-header">
+    <div class="pg-title">
+        <i class="bi bi-grid-1x2-fill"></i>
+        {% if request.user.first_name %}Bienvenido, {{ request.user.first_name }}{% else %}Panel del cliente{% endif %}
+    </div>
+    <small class="text-muted">Resumen general</small>
+</div>
+
+<!-- Métricas -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <a href="{% url 'cliente:pedidos_pendientes_cliente' %}" class="metric-card">
+            <div class="metric-icon" style="background:#fef9c3">
+                <i class="bi bi-hourglass-split" style="color:#d97706"></i>
+            </div>
+            <div>
+                <div class="metric-value">{{ pendientes_count }}</div>
+                <div class="metric-label">Pendientes</div>
+                <div class="metric-cta">Ver →</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3">
+        <a href="{% url 'cliente:pedidos_activos' %}" class="metric-card">
+            <div class="metric-icon" style="background:#dbeafe">
+                <i class="bi bi-truck" style="color:#1d4ed8"></i>
+            </div>
+            <div>
+                <div class="metric-value">{{ activos_count }}</div>
+                <div class="metric-label">Activos</div>
+                <div class="metric-cta">Ver →</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3">
+        <a href="{% url 'cliente:entregas' %}" class="metric-card">
+            <div class="metric-icon" style="background:#dcfce7">
+                <i class="bi bi-check2-circle" style="color:#16a34a"></i>
+            </div>
+            <div>
+                <div class="metric-value">{{ entregas_count }}</div>
+                <div class="metric-label">Entregas</div>
+                <div class="metric-cta">Ver →</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3">
+        <a href="{% url 'cliente:ver_carrito' %}" class="metric-card">
+            <div class="metric-icon" style="background:#e0f2fe">
+                <i class="bi bi-cart3" style="color:#0891b2"></i>
+            </div>
+            <div>
+                <div class="metric-value">{% if carrito %}{{ carrito.total_items }}{% else %}0{% endif %}</div>
+                <div class="metric-label">En carrito</div>
+                <div class="metric-cta">Ver →</div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Tablas rápidas -->
+<div class="row g-3">
 
   <!-- Métricas principales -->
   <div class="row g-3">
@@ -48,71 +106,68 @@
     </div>
   </div>
 
-  <!-- Listas rápidas -->
-  <div class="row g-3 mt-3">
-    <div class="col-lg-6">
-      <div class="card shadow-sm h-100">
-        <div class="card-header">Últimos pedidos pendientes</div>
-        <div class="card-body p-0">
-          <div class="table-responsive">
-          <table class="table table-striped table-hover align-middle mb-0">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Fecha</th>
-                <th>Items</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for p in pendientes_ultimos %}
-              <tr>
-                <td>{{ p.id }}</td>
-                <td>{{ p.fecha|date:"d/m/Y H:i" }}</td>
-                <td>{{ p.items.count }}</td>
-              </tr>
-              {% empty %}
-              <tr><td colspan="3" class="text-center py-3">Sin pendientes</td></tr>
-              {% endfor %}
-            </tbody>
-          </table>
-          </div>
+    <!-- Últimos pendientes -->
+    <div class="col-lg-5">
+        <div class="tbl-card">
+            <div class="tbl-card-head">
+                <span><i class="bi bi-hourglass-split me-1 text-warning"></i> Últimos pendientes</span>
+                <a href="{% url 'cliente:pedidos_pendientes_cliente' %}" class="btn btn-sm btn-outline-secondary py-0">Ver todos</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead><tr><th>#</th><th>Fecha</th><th class="text-center">Items</th></tr></thead>
+                    <tbody>
+                    {% for p in pendientes_ultimos %}
+                    <tr>
+                        <td class="fw-600">#{{ p.id }}</td>
+                        <td class="text-muted small">{{ p.fecha|date:"d/m/Y" }}</td>
+                        <td class="text-center"><span class="badge badge-pendiente rounded-pill">{{ p.items.count }}</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="3"><div class="empty-state py-3"><i class="bi bi-inbox"></i><p class="small mb-0">Sin pendientes</p></div></td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
-      </div>
     </div>
 
-    <div class="col-lg-6">
-      <div class="card shadow-sm h-100">
-        <div class="card-header">Últimos pedidos activos</div>
-        <div class="card-body p-0">
-          <div class="table-responsive">
-          <table class="table table-striped table-hover align-middle mb-0">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Destino</th>
-                <th>Fecha</th>
-                <th>Productos</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for p in activos_ultimos %}
-              <tr>
-                <td>{{ p.id }}</td>
-                <td>{{ p.cliente.comercio.nombre }}</td>
-                <td>{{ p.creado_en|date:"d/m/Y H:i" }}</td>
-                <td>{{ p.detallepedido_set.count }}</td>
-                <td><a href="{% url 'cliente:pedido_detalle' p.id %}" class="btn btn-sm btn-outline-primary">Ver</a></td>
-              </tr>
-              {% empty %}
-              <tr><td colspan="5" class="text-center py-3">Sin activos</td></tr>
-              {% endfor %}
-            </tbody>
-          </table>
-          </div>
+    <!-- Últimos activos -->
+    <div class="col-lg-7">
+        <div class="tbl-card">
+            <div class="tbl-card-head">
+                <span><i class="bi bi-truck me-1 text-primary"></i> Últimos activos</span>
+                <a href="{% url 'cliente:pedidos_activos' %}" class="btn btn-sm btn-outline-secondary py-0">Ver todos</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead><tr><th>#</th><th>Destino</th><th>Fecha</th><th class="text-center">Prods.</th><th></th></tr></thead>
+                    <tbody>
+                    {% for p in activos_ultimos %}
+                    <tr>
+                        <td class="fw-600">#{{ p.id }}</td>
+                        <td class="fw-500">{{ p.cliente.comercio.nombre }}</td>
+                        <td class="text-muted small">{{ p.creado_en|date:"d/m/Y" }}</td>
+                        <td class="text-center">{{ p.detallepedido_set.count }}</td>
+                        <td><a href="{% url 'cliente:pedido_detalle' p.id %}" class="btn btn-sm btn-outline-primary py-0 px-2">Ver</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5"><div class="empty-state py-3"><i class="bi bi-inbox"></i><p class="small mb-0">Sin activos</p></div></td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
+</div>
+
+<!-- Accesos rápidos -->
+<div class="d-flex flex-wrap gap-2 mt-3">
+    <a href="{% url 'cliente:nuevo_pedido' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i> Nuevo pedido
+    </a>
+    <a href="{% url 'cliente:ver_carrito' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-cart3 me-1"></i> Mi carrito
+    </a>
 </div>
 {% endblock %}

@@ -1,3 +1,7 @@
+from django.db.models import Max
+from datetime import timedelta, datetime
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import portrait
 from .forms import ViajeForm, AgregarPedidoPendienteForm
 from django.http import HttpResponse, JsonResponse
 from datetime import date, datetime
@@ -38,7 +42,7 @@ from .forms import ProductoForm, PedidoForm, AgregarProductoForm, PedidoEditForm
 from django.contrib.auth.models import User, Group
 from carneclick.decorators import group_required
 from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import A4
+from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.units import cm
 from datetime import timedelta
 from django.contrib import messages
@@ -46,6 +50,73 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django import forms
 import time
+
+
+@group_required('Encargado')
+def notifications_json(request):
+    """Devuelve conteos de notificaciones importantes en JSON."""
+    from django.urls import reverse
+    # Clientes pendientes
+    try:
+        grupo_pendiente = Group.objects.get(name='Cliente_Pendiente')
+        n_clientes = User.objects.filter(groups=grupo_pendiente).count()
+    except Group.DoesNotExist:
+        n_clientes = 0
+
+    # Pedidos pendientes de clientes
+    n_pedidos = Pedido_cliente.objects.filter(estado='pendiente').count()
+
+    # Productos por vencer en los próximos 3 días
+    ahora = timezone.now()
+    candidatos = Productos.objects.filter(estado__in=['en stock', 'preparado'])
+    por_vencer = 0
+    for p in candidatos:
+        try:
+            venc = p.fecha_vencimiento()
+            if ahora <= venc <= ahora + timedelta(days=3):
+                por_vencer += 1
+        except Exception:
+            continue
+
+    # Viajes activos
+    n_viajes = Viaje.objects.filter(
+        pedido__estado__estado='activo').distinct().count()
+
+    total = n_clientes + n_pedidos + por_vencer
+
+    return JsonResponse({
+        'total': total,
+        'items': [
+            {
+                'label': 'Clientes pendientes',
+                'count': n_clientes,
+                'url': reverse('encargado:clientes_pendientes_e'),
+                'icon': 'bi-person-exclamation',
+                'color': 'warning',
+            },
+            {
+                'label': 'Pedidos pendientes',
+                'count': n_pedidos,
+                'url': reverse('encargado:pedidos_pendientes'),
+                'icon': 'bi-clock-history',
+                'color': 'danger',
+            },
+            {
+                'label': 'Productos por vencer (3 días)',
+                'count': por_vencer,
+                'url': reverse('encargado:reporte_vencimientos'),
+                'icon': 'bi-calendar-x',
+                'color': 'warning',
+            },
+            {
+                'label': 'Viajes activos',
+                'count': n_viajes,
+                'url': reverse('encargado:viajes_activos'),
+                'icon': 'bi-truck',
+                'color': 'success',
+            },
+        ]
+    })
 
 
 @group_required('Encargado')
@@ -438,104 +509,122 @@ def nuevo_pedido_manual(request):
 
 
 def generar_ticket_pdf(producto):
-    # Ajusta 'fecha' según tu modelo Entrada
+
     fecha_entrada = producto.fecha_entrada.fecha
+
     try:
         fecha_entrada_local = timezone.localtime(fecha_entrada)
     except Exception:
         fecha_entrada_local = fecha_entrada
 
-    # Calculamos la fecha de vencimiento sumando los días de temperatura
     dias = producto.temperatura.dias
     fecha_vencimiento = fecha_entrada_local + timedelta(days=dias)
 
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'inline; filename="ticket_producto.pdf"'
+    response['Content-Disposition'] = 'inline; filename="ticket_trazabilidad.pdf"'
 
-    c = canvas.Canvas(response, pagesize=A4)
-    width, height = A4
+    # TAMAÑO ETIQUETA (similar frigorífico)
+    width = 10 * cm
+    height = 7 * cm
 
-    y = height - 3 * cm
+    c = canvas.Canvas(response, pagesize=(width, height))
 
-    # Encabezado
-    c.setFont("Helvetica-Bold", 16)
-    c.drawString(3 * cm, y, "Ticket de Entrada de Stock")
-    y -= 1 * cm
+    y = height - 0.5 * cm
 
-    # Código destacado
-    try:
-        codigo = getattr(producto, 'codigo', '') or ''
-    except Exception:
-        codigo = ''
+    # ---------- ENCABEZADO ----------
+    c.setFont("Helvetica-Bold", 9)
+    c.drawCentredString(width / 2, y, "CarneClick - Trazabilidad")
+    y -= 0.4 * cm
 
-    # Si no hay `codigo` (previsualización antes de guardar), intentar generar
-    # un valor similar al que tendría un producto guardado para que el ticket
-    # muestre algo identificable.
-    if not codigo:
-        prod_id = getattr(producto, 'id', None)
-        if prod_id:
-            codigo = f"P{prod_id:06d}"
-        else:
-            # Producto aún no guardado: calcular próximo id disponible y usar
-            # el mismo formato que los productos guardados (P000001)
-            try:
-                max_id = Productos.objects.aggregate(
-                    max_id=Max('id'))['max_id'] or 0
-                next_id = int(max_id) + 1
-                codigo = f"P{next_id:06d}"
-            except Exception:
-                # Fallback a marca temporal
-                codigo = f"PREV-{datetime.now().strftime('%H%M%S')}"
-    if codigo:
-        c.setFont("Helvetica-Bold", 24)
-        c.drawString(3 * cm, y, f"Código: {codigo}")
-        y -= 1.2 * cm
+    c.setFont("Helvetica", 7)
 
-    c.setFont("Helvetica", 11)
-    c.drawString(3 * cm, y, f"Producto: {producto.nombre}")
-    y -= 0.7 * cm
-    c.drawString(3 * cm, y, f"Kilos: {producto.kilos}")
-    y -= 0.7 * cm
-    # Obtener proveedor desde la Entrada (producto.fecha_entrada puede ser instancia o id)
+    c.line(0.3 * cm, y, width - 0.3 * cm, y)
+    y -= 0.4 * cm
+
+    # ---------- DATOS ----------
+
+    # proveedor
     proveedor_nombre = ''
     try:
         entrada = producto.fecha_entrada
         if entrada and getattr(entrada, 'proveedor', None):
             proveedor_nombre = entrada.proveedor.nombre
-    except Exception:
-        proveedor_nombre = ''
+    except:
+        pass
 
-    # Número de lote (por entrada)
+    c.drawString(0.4 * cm, y, f"Proveedor: {proveedor_nombre}")
+    y -= 0.35 * cm
+
+    # lote
     lote_numero = ''
     try:
         lote_numero = getattr(entrada, 'numero_lote', '') or ''
-    except Exception:
-        lote_numero = ''
+    except:
+        pass
 
-    c.drawString(3 * cm, y, f"Proveedor: {proveedor_nombre}")
-    y -= 0.7 * cm
     if lote_numero:
-        c.drawString(3 * cm, y, f"Lote: {lote_numero}")
-        y -= 0.7 * cm
+        c.drawString(0.4 * cm, y, f"Tropa/Lote: {lote_numero}")
+        y -= 0.35 * cm
 
-    c.drawString(3 * cm, y, f"Frigorífico: {producto.frigorificop}")
+    # fechas
+    fecha_entrada_str = fecha_entrada_local.strftime("%d/%m/%Y")
+    fecha_vencimiento_str = fecha_vencimiento.strftime("%d/%m/%Y")
+
+    c.drawString(0.4 * cm, y, f"Entrada: {fecha_entrada_str}")
+    y -= 0.35 * cm
+
+    c.drawString(0.4 * cm, y, f"Venc: {fecha_vencimiento_str}")
+    y -= 0.5 * cm
+
+    c.line(0.3 * cm, y, width - 0.3 * cm, y)
     y -= 0.7 * cm
 
-    try:
-        fecha_entrada_str = fecha_entrada_local.strftime("%d/%m/%Y %H:%M")
-    except Exception:
-        fecha_entrada_str = str(fecha_entrada_local)
-    c.drawString(3 * cm, y, f"Fecha de entrada: {fecha_entrada_str}")
-    y -= 0.7 * cm
+    # ---------- CODIGO GRANDE ----------
+    codigo = getattr(producto, 'codigo', '')
 
-    try:
-        fecha_vencimiento_str = fecha_vencimiento.strftime("%d/%m/%Y %H:%M")
-    except Exception:
-        fecha_vencimiento_str = str(fecha_vencimiento)
-    c.drawString(3 * cm, y, f"Fecha de vencimiento: {fecha_vencimiento_str}")
-    y -= 1 * cm
+    if not codigo:
+        prod_id = getattr(producto, 'id', None)
+        if prod_id:
+            codigo = f"{prod_id:07d}"
+        else:
+            try:
+                max_id = Productos.objects.aggregate(
+                    max_id=Max('id'))['max_id'] or 0
+                codigo = f"{max_id+1:07d}"
+            except:
+                codigo = datetime.now().strftime("%H%M%S")
 
-    c.line(3 * cm, y, width - 3 * cm, y)
+    c.setFont("Helvetica-Bold", 20)
+    c.drawCentredString(width / 2, y, codigo)
+
+    y -= 0.6 * cm
+
+    # Etiqueta pequeña indicando que es el número de identificación
+    c.setFont("Helvetica", 6)
+    c.drawCentredString(width / 2, y, "N° Identificación")
+
+    # Mostrar nombre, kilos por unidad y cantidad debajo del código
+    try:
+        nombre_str = str(getattr(producto, 'nombre', '') or '')
+    except Exception:
+        nombre_str = ''
+    try:
+        kilos_val = float(getattr(producto, 'kilos', 0) or 0)
+        kilos_str = f"{kilos_val:.2f} kg"
+    except Exception:
+        kilos_str = "0.00 kg"
+    try:
+        cantidad_val = int(getattr(producto, 'cantidad', 1) or 1)
+        cantidad_str = f"Cantidad: {cantidad_val}"
+    except Exception:
+        cantidad_str = "Cantidad: 1"
+
+    y -= 0.35 * cm
+    c.setFont("Helvetica", 7)
+    c.drawCentredString(width / 2, y, nombre_str)
+    y -= 0.35 * cm
+    # mostrar kilos y cantidad en la misma línea separadas por un punto
+    c.drawCentredString(width / 2, y, f"{kilos_str} • {cantidad_str}")
 
     c.showPage()
     c.save()
@@ -644,11 +733,12 @@ def generar_ticket_entrada(request, entrada_id):
                  .select_related('nombre', 'frigorificop', 'temperatura'))
 
     buffer = BytesIO()
-    c = canvas.Canvas(buffer, pagesize=A4)
-    width, height = A4
+    # Usar A4 en orientación apaisada para más espacio horizontal
+    c = canvas.Canvas(buffer, pagesize=landscape(A4))
+    width, height = landscape(A4)
 
-    x_margin = 3 * cm
-    y = height - 3 * cm
+    x_margin = 2 * cm
+    y = height - 2 * cm
 
     # Encabezado
     c.setFont("Helvetica-Bold", 16)
@@ -683,35 +773,52 @@ def generar_ticket_entrada(request, entrada_id):
     y -= 0.8 * cm
 
     # Tabla productos
-    c.setFont("Helvetica-Bold", 12)
+    # Encabezado de tabla más compacto
+    c.setFont("Helvetica-Bold", 11)
     c.drawString(x_margin, y, "Código")
-    c.drawString(x_margin + 3.5 * cm, y, "Descripción")
-    c.drawString(x_margin + 11 * cm, y, "Kilos")
-    c.drawString(x_margin + 14 * cm, y, "Frigorífico")
-    y -= 0.6 * cm
-    c.setFont("Helvetica", 11)
+    c.drawString(x_margin + 2.8 * cm, y, "Descripción")
+    c.drawRightString(x_margin + 11.0 * cm, y, "Kilos (c/u)")
+    c.drawRightString(x_margin + 14.0 * cm, y, "Cantidad")
+    c.drawRightString(x_margin + 17.0 * cm, y, "Kilos tot.")
+    c.drawString(x_margin + 19.2 * cm, y, "Frigorífico")
+    y -= 0.5 * cm
+    c.setFont("Helvetica", 10)
 
     for p in productos:
-        if y < 3 * cm:
+        if y < 2.5 * cm:
             c.showPage()
-            y = height - 3 * cm
-            c.setFont("Helvetica-Bold", 12)
+            # nuevo header en página siguiente
+            y = height - 2 * cm
+            c.setFont("Helvetica-Bold", 11)
             c.drawString(x_margin, y, "Código")
-            c.drawString(x_margin + 3.5 * cm, y, "Descripción")
-            c.drawString(x_margin + 11 * cm, y, "Kilos")
-            c.drawString(x_margin + 14 * cm, y, "Frigorífico")
-            y -= 0.6 * cm
-            c.setFont("Helvetica", 11)
+            c.drawString(x_margin + 2.8 * cm, y, "Descripción")
+            c.drawRightString(x_margin + 11.0 * cm, y, "Kilos (c/u)")
+            c.drawRightString(x_margin + 14.0 * cm, y, "Cantidad")
+            c.drawRightString(x_margin + 17.0 * cm, y, "Kilos tot.")
+            c.drawString(x_margin + 19.2 * cm, y, "Frigorífico")
+            y -= 0.5 * cm
+            c.setFont("Helvetica", 10)
 
         codigo = getattr(p, 'codigo', '') or f"P{p.id:06d}"
         frigorifico_nombre = getattr(
             p.frigorificop, 'nombre', str(p.frigorificop))
         desc = getattr(p.nombre, 'nombre', str(p.nombre))
+        kilos_val = getattr(p, 'kilos', 0) or 0
+        cantidad_val = getattr(p, 'cantidad', 1) or 1
+        try:
+            kilos_tot = float(kilos_val) * int(cantidad_val)
+        except Exception:
+            kilos_tot = 0
 
+        # pintar fila con alineación numérica a la derecha
         c.drawString(x_margin, y, f"{codigo}")
-        c.drawString(x_margin + 3.5 * cm, y, desc)
-        c.drawString(x_margin + 11 * cm, y, f"{p.kilos}")
-        c.drawString(x_margin + 14 * cm, y, frigorifico_nombre)
+        # limitar descripción para evitar overflow
+        desc_short = (desc[:60] + '...') if len(desc) > 63 else desc
+        c.drawString(x_margin + 2.8 * cm, y, desc_short)
+        c.drawRightString(x_margin + 11.0 * cm, y, f"{float(kilos_val):.2f}")
+        c.drawRightString(x_margin + 14.0 * cm, y, f"{int(cantidad_val)}")
+        c.drawRightString(x_margin + 17.0 * cm, y, f"{kilos_tot:.2f}")
+        c.drawString(x_margin + 19.2 * cm, y, frigorifico_nombre)
         y -= 0.55 * cm
 
     c.showPage()
@@ -753,6 +860,11 @@ def entrada_stock(request):
         if form.is_valid():
             producto = form.save(commit=False)
             producto.fecha_entrada = entrada_actual
+            # cantidad indicada en el formulario: crea múltiples Productos si >1
+            try:
+                cantidad = int(request.POST.get('cantidad') or 1)
+            except Exception:
+                cantidad = 1
 
             # Si se envió un proveedor para la entrada, guardarlo en la Entrada
             entrada_proveedor_id = request.POST.get('entrada_proveedor')
@@ -777,6 +889,7 @@ def entrada_stock(request):
                 # Estado por defecto: en stock
                 producto.estado = 'en stock'
                 producto.save()
+
                 # 🔹 Guardar valores del último producto
                 request.session['ultimo_producto'] = {
                     'nombre': producto.nombre_id,
@@ -1138,6 +1251,12 @@ def agregar_producto_por_id(request, pedido_id):
         # Permitir ID o Código
         producto_id_str = request.POST.get('producto_id', '').strip()
         producto_codigo = request.POST.get('producto_codigo', '').strip()
+        try:
+            cantidad_pedido = max(
+                1, int(request.POST.get('cantidad_pedido', 1) or 1))
+        except (ValueError, TypeError):
+            cantidad_pedido = 1
+
         if not producto_id_str and not producto_codigo:
             messages.error(
                 request, 'Debes ingresar un ID o Código de producto')
@@ -1168,24 +1287,47 @@ def agregar_producto_por_id(request, pedido_id):
                     if producto_locked.estado != 'en stock':
                         messages.warning(
                             request, 'Solo se pueden agregar productos en estado "en stock"')
+                    elif float(producto_locked.reserved_kilos or 0) > 0:
+                        messages.warning(
+                            request, 'El producto tiene reservas activas y no está disponible')
+                    elif cantidad_pedido > producto_locked.cantidad:
+                        messages.warning(
+                            request,
+                            f'Solo hay {producto_locked.cantidad} unidades disponibles de este producto')
+                    elif DetallePedido.objects.filter(pedido_id=pedido, producto_id=producto_locked).exists():
+                        messages.info(
+                            request, 'El producto ya estaba agregado a este pedido')
                     else:
-                        if DetallePedido.objects.filter(pedido_id=pedido, producto_id=producto_locked).exists():
-                            messages.info(
-                                request, 'El producto ya estaba agregado a este pedido')
-                        else:
-                            if float(producto_locked.reserved_kilos or 0) > 0:
-                                messages.warning(
-                                    request, 'El producto tiene reservas activas y no está disponible')
-                                return redirect('encargado:iniciar_pedido', pedido_pendiente_id=pedido_pendiente_id)
+                        if cantidad_pedido == producto_locked.cantidad:
+                            # Usar el producto completo
                             DetallePedido.objects.create(
                                 pedido_id=pedido,
                                 producto_id=producto_locked,
-                                cantidad=1
+                                cantidad=cantidad_pedido
                             )
                             producto_locked.estado = 'preparado'
                             producto_locked.save(update_fields=['estado'])
-                            messages.success(
-                                request, 'Producto agregado correctamente')
+                        else:
+                            # Split: reducir original y crear registro preparado
+                            producto_locked.cantidad -= cantidad_pedido
+                            producto_locked.save(update_fields=['cantidad'])
+                            nuevo = Productos.objects.create(
+                                nombre=producto_locked.nombre,
+                                kilos=producto_locked.kilos,
+                                cantidad=cantidad_pedido,
+                                reserved_kilos=0,
+                                fecha_entrada=producto_locked.fecha_entrada,
+                                temperatura=producto_locked.temperatura,
+                                frigorificop=producto_locked.frigorificop,
+                                estado='preparado',
+                            )
+                            DetallePedido.objects.create(
+                                pedido_id=pedido,
+                                producto_id=nuevo,
+                                cantidad=cantidad_pedido
+                            )
+                        messages.success(
+                            request, 'Producto agregado correctamente')
 
     return redirect('encargado:iniciar_pedido', pedido_pendiente_id=pedido_pendiente_id)
 
@@ -1290,83 +1432,86 @@ def boleta_pedido(request, pedido_id):
         'producto_id', 'producto_id__nombre')
 
     buffer = BytesIO()
-    c = canvas.Canvas(buffer, pagesize=A4)
-    width, height = A4
+    # Usar mitad de hoja A4 (alto reducido) para imprimir 2 boletas por hoja
+    half_height = A4[1] / 2.0
+    c = canvas.Canvas(buffer, pagesize=(A4[0], half_height))
+    width, height = (A4[0], half_height)
 
-    # Margenes
-    left = 2 * cm
-    right = width - 2 * cm
-    y = height - 2 * cm
+    # Márgenes más compactos
+    left = 1.5 * cm
+    right = width - 1.5 * cm
+    y = height - 1.2 * cm
 
-    # Header central pequeño
-    c.setFont('Helvetica-Bold', 12)
+    # Header central compacto
+    c.setFont('Helvetica-Bold', 10)
     c.drawCentredString(width / 2.0, y, 'DOCUMENTO NO VALIDO COMO FACTURA')
 
     # Remito número arriba a la derecha
     remito_str = f'REMITO N\u00ba  R{pedido.id:04d}'
-    c.setFont('Helvetica-Bold', 10)
+    c.setFont('Helvetica-Bold', 9)
     c.drawRightString(right, y + 6, remito_str)
 
     # Fecha arriba a la derecha (alineado bajo el remito)
     fecha_str = pedido.creado_en.strftime(
         '%d/%m/%Y') if pedido.creado_en else timezone.now().strftime('%d/%m/%Y')
-    c.setFont('Helvetica', 9)
-    c.drawRightString(right, y - 10, f'Fecha: {fecha_str}')
+    c.setFont('Helvetica', 8)
+    c.drawRightString(right, y - 8, f'Fecha: {fecha_str}')
 
-    y -= 18
+    y -= 14
 
     # Caja con sucursal origen / destino y observaciones (a la izquierda)
-    box_h = 48
+    box_h = 38
     c.setLineWidth(0.5)
     c.rect(left, y - box_h, right - left, box_h, stroke=1, fill=0)
 
     # Dentro de la caja: origen, destino, observaciones
     inner_x = left + 6
-    inner_y = y - 12
+    inner_y = y - 10
     origen_nombre = str(getattr(pedido.comercio_origen, 'nombre', '-'))
     destino_nombre = str(getattr(cliente.comercio, 'nombre', '-'))
     observ = pedido.observaciones or ''
 
-    c.setFont('Helvetica-Bold', 9)
+    c.setFont('Helvetica-Bold', 8)
     c.drawString(inner_x, inner_y, 'Sucursal Origen:')
-    c.setFont('Helvetica', 9)
-    c.drawString(inner_x + 90, inner_y, origen_nombre)
+    c.setFont('Helvetica', 8)
+    c.drawString(inner_x + 80, inner_y, origen_nombre[:50])
 
-    c.setFont('Helvetica-Bold', 9)
-    c.drawString(inner_x, inner_y - 14, 'Sucursal Destino:')
-    c.setFont('Helvetica', 9)
-    c.drawString(inner_x + 100, inner_y - 14, destino_nombre)
+    c.setFont('Helvetica-Bold', 8)
+    c.drawString(inner_x, inner_y - 12, 'Sucursal Destino:')
+    c.setFont('Helvetica', 8)
+    c.drawString(inner_x + 80, inner_y - 12, destino_nombre[:50])
 
-    c.setFont('Helvetica-Bold', 9)
-    c.drawString(inner_x, inner_y - 28, 'Observaciones:')
-    c.setFont('Helvetica', 9)
-    c.drawString(inner_x + 90, inner_y - 28, observ)
+    c.setFont('Helvetica-Bold', 8)
+    c.drawString(inner_x, inner_y - 24, 'Observaciones:')
+    c.setFont('Helvetica', 8)
+    c.drawString(inner_x + 80, inner_y - 24, observ[:80])
 
-    y = y - box_h - 12
+    y = y - box_h - 10
 
     # Tabla: encabezado
     col_codigo = left + 6
-    col_descrip = left + 60
-    col_kilos = right - 120
-    col_cant = right - 40
+    col_descrip = left + 50
+    col_kilos = right - 100
+    col_cant = right - 30
 
-    c.setFont('Helvetica-Bold', 10)
+    c.setFont('Helvetica-Bold', 9)
     c.drawString(col_codigo, y, 'Codigo')
     c.drawString(col_descrip, y, 'Descripcion')
-    c.drawRightString(col_kilos + 50, y, 'Kilos')
-    c.drawRightString(col_cant + 30, y, 'Cantidad')
-    y -= 12
+    c.drawRightString(col_kilos + 40, y, 'Kilos')
+    c.drawRightString(col_cant + 20, y, 'Cantidad')
+    y -= 10
 
     c.setLineWidth(0.3)
     # dibujar líneas de cabecera
-    c.line(left + 2, y + 8, right - 2, y + 8)
+    c.line(left + 2, y + 6, right - 2, y + 6)
 
-    c.setFont('Helvetica', 9)
-    row_h = 12
+    c.setFont('Helvetica', 8)
+    row_h = 10
     for item in detalles:
-        if y < 3 * cm:
+        if y < 1.5 * cm:
             c.showPage()
-            y = height - 2 * cm
+            # resetear posición en nueva media-hoja
+            y = height - 1.2 * cm
         prod = item.producto_id
         codigo = str(getattr(prod, 'id', ''))
         nombre = str(getattr(prod, 'nombre', ''))
@@ -1379,21 +1524,21 @@ def boleta_pedido(request, pedido_id):
 
         c.drawString(col_codigo, y, codigo)
         # limitar descripción si es muy larga
-        c.drawString(col_descrip, y, descripcion[:80])
-        c.drawRightString(col_kilos + 50, y, kilos)
-        c.drawRightString(col_cant + 30, y, cantidad)
+        c.drawString(col_descrip, y, descripcion[:60])
+        c.drawRightString(col_kilos + 40, y, kilos)
+        c.drawRightString(col_cant + 20, y, cantidad)
 
         # línea separadora
-        c.line(left + 2, y - 3, right - 2, y - 3)
+        c.line(left + 2, y - 2, right - 2, y - 2)
         y -= row_h
 
-    # Firmas
-    sig_y = 3.5 * cm
-    c.line(left + 40, sig_y, left + 180, sig_y)
-    c.drawString(left + 70, sig_y - 14, 'Firma')
+    # Firmas (reducidas)
+    sig_y = 2.2 * cm
+    c.line(left + 30, sig_y, left + 140, sig_y)
+    c.drawString(left + 60, sig_y - 12, 'Firma')
 
-    c.line(right - 180, sig_y, right - 40, sig_y)
-    c.drawString(right - 150, sig_y - 14, 'Aclaracion')
+    c.line(right - 140, sig_y, right - 30, sig_y)
+    c.drawString(right - 120, sig_y - 12, 'Aclaracion')
 
     c.showPage()
     c.save()
@@ -1495,6 +1640,12 @@ def agregar_producto_preparado(request, pedido_id):
 
     if request.method == 'POST':
         producto_id_str = request.POST.get('producto_id', '').strip()
+        try:
+            cantidad_pedido = max(
+                1, int(request.POST.get('cantidad_pedido', 1) or 1))
+        except (ValueError, TypeError):
+            cantidad_pedido = 1
+
         if not producto_id_str:
             messages.error(request, 'Debes ingresar un ID de producto')
         else:
@@ -1514,26 +1665,49 @@ def agregar_producto_preparado(request, pedido_id):
                 if producto.estado != 'en stock':
                     messages.warning(
                         request, 'Solo se pueden agregar productos en estado "en stock"')
+                elif float(producto.reserved_kilos or 0) > 0:
+                    messages.warning(
+                        request, 'El producto tiene reservas activas y no está disponible')
+                elif cantidad_pedido > producto.cantidad:
+                    messages.warning(
+                        request,
+                        f'Solo hay {producto.cantidad} unidades disponibles de este producto')
+                elif DetallePedido.objects.filter(pedido_id=pedido, producto_id=producto).exists():
+                    messages.info(
+                        request, 'El producto ya estaba agregado a este pedido')
                 else:
-                    # Evitar duplicados en el mismo pedido
-                    if DetallePedido.objects.filter(pedido_id=pedido, producto_id=producto).exists():
-                        messages.info(
-                            request, 'El producto ya estaba agregado a este pedido')
-                    else:
-                        # No permitir usar productos con reservas activas
-                        if float(producto.reserved_kilos or 0) > 0:
-                            messages.warning(
-                                request, 'El producto tiene reservas activas y no está disponible')
-                            return redirect('encargado:editar_pedido_preparado', pedido_id=pedido.id)
-                        DetallePedido.objects.create(
-                            pedido_id=pedido,
-                            producto_id=producto,
-                            cantidad=1
-                        )
-                        producto.estado = 'preparado'
-                        producto.save(update_fields=['estado'])
-                        messages.success(
-                            request, 'Producto agregado correctamente')
+                    with transaction.atomic():
+                        producto_locked = Productos.objects.select_for_update().get(id=producto.id)
+                        if cantidad_pedido == producto_locked.cantidad:
+                            # Usar el producto completo
+                            DetallePedido.objects.create(
+                                pedido_id=pedido,
+                                producto_id=producto_locked,
+                                cantidad=cantidad_pedido
+                            )
+                            producto_locked.estado = 'preparado'
+                            producto_locked.save(update_fields=['estado'])
+                        else:
+                            # Split: reducir original y crear registro preparado
+                            producto_locked.cantidad -= cantidad_pedido
+                            producto_locked.save(update_fields=['cantidad'])
+                            nuevo = Productos.objects.create(
+                                nombre=producto_locked.nombre,
+                                kilos=producto_locked.kilos,
+                                cantidad=cantidad_pedido,
+                                reserved_kilos=0,
+                                fecha_entrada=producto_locked.fecha_entrada,
+                                temperatura=producto_locked.temperatura,
+                                frigorificop=producto_locked.frigorificop,
+                                estado='preparado',
+                            )
+                            DetallePedido.objects.create(
+                                pedido_id=pedido,
+                                producto_id=nuevo,
+                                cantidad=cantidad_pedido
+                            )
+                    messages.success(
+                        request, 'Producto agregado correctamente')
 
     return redirect('encargado:editar_pedido_preparado', pedido_id=pedido.id)
 

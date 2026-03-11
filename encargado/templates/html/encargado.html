@@ -54,14 +54,6 @@
         <div class="col-6 col-md-3 mb-3">
             <div class="card shadow-sm h-100">
                 <div class="card-body">
-                    <div class="text-muted">Stock disponible (kg)</div>
-                    <div class="display-6">{{ stock_kg|floatformat:1 }}</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3 mb-3">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
                     <div class="text-muted">Incidentes sin atender</div>
                     <div class="display-6">{{ incidentes_no_atendidos }}</div>
                     <div class="mt-2"><a href="{% url 'encargado:incidentes_list' %}" class="stretched-link">Ver incidentes</a></div>
