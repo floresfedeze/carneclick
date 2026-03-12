@@ -33,6 +33,7 @@
 
         </div>
     </header>
+    <div id="sb-overlay" class="sb-overlay"></div>
     <div class="sidebar" id="sidebar">
         <nav>
             <ul class="nav flex-column">
@@ -40,7 +41,7 @@
                 <!-- Dashboard -->
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'encargado:home' %}">
-                        <img src="{% static 'encargado/img/menu_sidebar.png' %}">
+                        <img class="nav-icon" src="{% static 'encargado/img/menu_sidebar.png' %}">
                         <span>{{ ui.Dashboard }}</span>
                     </a>
                 </li>
@@ -48,9 +49,9 @@
                 <!-- Pedidos -->
                 <li class="nav-item dropdown">
                     <a data-bs-toggle="collapse" data-bs-target="#collapseWidthExample" aria-expanded="false" aria-controls="collapseWidthExample">
-                        <img src="{% static 'encargado/img/pedidos.svg' %}">
+                        <img class="nav-icon" src="{% static 'encargado/img/pedidos.svg' %}">
                         <span>{{ ui.Orders }}</span>
-                        <img src="{% static 'encargado/img/flecha_abajo.svg' %}">
+                        <img class="flecha" src="{% static 'encargado/img/flecha_abajo.svg' %}">
                     </a>
                     <ul class="collapse" id="collapseWidthExample">
                         <li><a class="" href="{% url 'encargado:nuevo_pedido_manual' %}">{{ ui.NewOrder }}</a></li>
@@ -63,9 +64,9 @@
                 <!-- Viajes -->
                 <li class="nav-item dropdown">
                     <a data-bs-toggle="collapse" data-bs-target="#ViajesExample" aria-expanded="false" aria-controls="ViajesExample">
-                        <img src="{% static 'encargado/img/viajes.svg' %}">
+                        <img class="nav-icon" src="{% static 'encargado/img/viajes.svg' %}">
                         <span>{{ ui.Trips }}</span>
-                        <img src="{% static 'encargado/img/flecha_abajo.svg' %}">
+                        <img class="flecha" src="{% static 'encargado/img/flecha_abajo.svg' %}">
                     </a>
                     <ul class="collapse" id="ViajesExample">
                         <li><a  href="{% url 'encargado:nuevo_viaje' %}">{{ ui.NewTrip }}</a></li>
@@ -77,9 +78,9 @@
                 <!-- Productos -->
                 <li class="nav-item dropdown">
                     <a data-bs-toggle="collapse" data-bs-target="#ProductosExample" aria-expanded="false" aria-controls="ProductosExample">
-                        <img src="{% static 'encargado/img/stock.svg' %}">
+                        <img class="nav-icon" src="{% static 'encargado/img/stock.svg' %}">
                         <span>{{ ui.Products }}</span>
-                        <img src="{% static 'encargado/img/flecha_abajo.svg' %}">
+                        <img class="flecha" src="{% static 'encargado/img/flecha_abajo.svg' %}">
                     </a>
                     <ul class="collapse" id="ProductosExample">
                         <li><a  href="{% url 'encargado:entrada'%}">{{ ui.Entries }}</a></li>
@@ -92,9 +93,9 @@
                 <!-- Clientes -->
                 <li class="nav-item dropdown">
                     <a data-bs-toggle="collapse" data-bs-target="#ClientesExample" aria-expanded="false" aria-controls="ClientesExample">
-                        <img src="{% static 'encargado/img/personas.png' %}">
+                        <img class="nav-icon" src="{% static 'encargado/img/personas.png' %}">
                         <span>{{ ui.Clients }}</span>
-                        <img src="{% static 'encargado/img/flecha_abajo.svg' %}">
+                        <img class="flecha" src="{% static 'encargado/img/flecha_abajo.svg' %}">
                     </a>
                     <ul class="collapse" id="ClientesExample">
                         <li><a href="{% url 'encargado:clientes'%}">{{ ui.CurrentClients }}</a></li>
@@ -107,9 +108,9 @@
                 <!-- Administración -->
                 <li class="nav-item dropdown">
                     <a data-bs-toggle="collapse" data-bs-target="#AdministracionExample" aria-expanded="false" aria-controls="AdministracionExample">
-                        <img src="{% static 'encargado/img/apoyo.png' %}">
+                        <img class="nav-icon" src="{% static 'encargado/img/apoyo.png' %}">
                         <span>{{ ui.Administration }}</span>
-                        <img src="{% static 'encargado/img/flecha_abajo.svg' %}">
+                        <img class="flecha" src="{% static 'encargado/img/flecha_abajo.svg' %}">
                     </a>
                     <ul class="collapse" id="AdministracionExample">
                         <li><a href="{% url 'administrador:empleados' %}">{{ ui.Employees }}</a></li>
@@ -123,9 +124,9 @@
                 <!-- Reportes -->
                 <li class="nav-item dropdown">
                     <a data-bs-toggle="collapse" data-bs-target="#ReportesExample" aria-expanded="false" aria-controls="ReportesExample">
-                        <img src="{% static 'encargado/img/grafico-de-barras.png' %}">
+                        <img class="nav-icon" src="{% static 'encargado/img/grafico-de-barras.png' %}">
                         <span>{{ ui.Reports }}</span>
-                        <img src="{% static 'encargado/img/flecha_abajo.svg' %}">
+                        <img class="flecha" src="{% static 'encargado/img/flecha_abajo.svg' %}">
                     </a>
                     <ul class="collapse" id="ReportesExample">
                         <li><a href="{% url 'encargado:reporte_consolidado' %}">Consolidado</a></li>
@@ -137,9 +138,9 @@
                 <!-- Configuracion -->
                 <li class="nav-item dropdown">
                     <a data-bs-toggle="collapse" data-bs-target="#ConfiguracionExample" aria-expanded="false" aria-controls="ConfiguracionExample">
-                        <img src="{% static 'encargado/img/engranaje.png' %}">
+                        <img class="nav-icon" src="{% static 'encargado/img/engranaje.png' %}">
                         <span>{{ ui.Settings }}</span>
-                        <img src="{% static 'encargado/img/flecha_abajo.svg' %}">
+                        <img class="flecha" src="{% static 'encargado/img/flecha_abajo.svg' %}">
                     </a>
                     <ul class="collapse" id="ConfiguracionExample">
                         <li><a  href="{% url 'set_language' %}?lang=en">{{ ui.Language }}: English</a></li>
@@ -151,7 +152,7 @@
                 <!-- Soporte -->
                 <li class="nav-item dropdown">
                     <a>
-                        <img src="{% static 'encargado/img/centro-de-llamadas.png' %}">
+                        <img class="nav-icon" src="{% static 'encargado/img/centro-de-llamadas.png' %}">
                         <span>{{ ui.Support }}</span>
                     </a>
                 </li>
