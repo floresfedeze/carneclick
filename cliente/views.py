@@ -1,5 +1,6 @@
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
 from carneclick.decorators import group_required
 from .forms import ClienteForm, ComercioForm
 from encargado.models import Cortes, Productos, Carrito, ItemCarrito, Pedido_cliente, PedidoItem, Pedido, Cliente, EstadoPedidos, IncidenteEntrega, Viaje
@@ -409,7 +410,16 @@ def register_cliente(request):
             logout(request)
             return redirect("login_view")
     else:
-        form = ClienteForm()
+        # Si viene el comercio en la query string, prellenarlo en el formulario
+        comercio_id = request.GET.get('comercio_id')
+        if comercio_id:
+            try:
+                comercio_id_int = int(comercio_id)
+            except Exception:
+                comercio_id_int = None
+            form = ClienteForm(initial={'comercio': comercio_id_int})
+        else:
+            form = ClienteForm()
 
     return render(request, "register_cliente.html", {
         "form": form
@@ -423,7 +433,8 @@ def register_comercio(request):
 
         if form.is_valid():
             comercio = form.save()
-            return redirect("cliente:register_cliente")
+            # Redirigir al formulario de registro de cliente pasando el comercio creado
+            return redirect(reverse('cliente:register_cliente') + f'?comercio_id={comercio.id}')
     else:
         form = ComercioForm()
 

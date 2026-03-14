@@ -1,0 +1,102 @@
+{% extends "base_encargado.html" %}
+{% load static %}
+
+{% block head %}
+<title>Mi Perfil</title>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex align-items-center gap-2 mb-4">
+    <i class="bi bi-person-circle fs-3"></i>
+    <h2 class="mb-0">Mi Perfil</h2>
+  </div>
+  <div class="row g-4">
+
+    <!-- Datos de cuenta -->
+    <div class="col-lg-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-transparent border-bottom fw-semibold">
+          <i class="bi bi-person me-2"></i>Datos de cuenta
+        </div>
+        <div class="card-body">
+          <form method="post" novalidate>
+            {% csrf_token %}
+            {{ perfil_form.non_field_errors }}
+
+            <div class="mb-3">
+              <label for="{{ perfil_form.username.id_for_label }}" class="form-label fw-semibold">Usuario</label>
+              {{ perfil_form.username }}
+              {% if perfil_form.username.errors %}
+                <div class="text-danger small mt-1">{{ perfil_form.username.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              <label for="{{ perfil_form.email.id_for_label }}" class="form-label fw-semibold">Email</label>
+              {{ perfil_form.email }}
+              {% if perfil_form.email.errors %}
+                <div class="text-danger small mt-1">{{ perfil_form.email.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="d-flex justify-content-end">
+              <button type="submit" name="save_profile" class="btn btn-primary px-4">
+                <i class="bi bi-floppy me-1"></i>Guardar cambios
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cambiar contraseña -->
+    <div class="col-lg-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-transparent border-bottom fw-semibold">
+          <i class="bi bi-shield-lock me-2"></i>Cambiar contraseña
+        </div>
+        <div class="card-body">
+          <form method="post" novalidate>
+            {% csrf_token %}
+            {% if pwd_form.non_field_errors %}
+              <div class="alert alert-danger py-2 small">{{ pwd_form.non_field_errors }}</div>
+            {% endif %}
+
+            <div class="mb-3">
+              <label for="{{ pwd_form.old_password.id_for_label }}" class="form-label fw-semibold">Contraseña actual</label>
+              {{ pwd_form.old_password }}
+              {% if pwd_form.old_password.errors %}
+                <div class="text-danger small mt-1">{{ pwd_form.old_password.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              <label for="{{ pwd_form.new_password1.id_for_label }}" class="form-label fw-semibold">Nueva contraseña</label>
+              {{ pwd_form.new_password1 }}
+              {% if pwd_form.new_password1.errors %}
+                <div class="text-danger small mt-1">{{ pwd_form.new_password1.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              <label for="{{ pwd_form.new_password2.id_for_label }}" class="form-label fw-semibold">Confirmar nueva contraseña</label>
+              {{ pwd_form.new_password2 }}
+              {% if pwd_form.new_password2.errors %}
+                <div class="text-danger small mt-1">{{ pwd_form.new_password2.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="d-flex justify-content-end">
+              <button type="submit" name="change_password" class="btn btn-outline-primary px-4">
+                <i class="bi bi-key me-1"></i>Actualizar contraseña
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

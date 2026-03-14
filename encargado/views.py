@@ -38,7 +38,9 @@ from .models import (
     IncidenteEntrega,
     IncidenteEntregaItem,
 )
-from .forms import ProductoForm, PedidoForm, AgregarProductoForm, PedidoEditForm, PedidoNuevoForm
+from .forms import ProductoForm, PedidoForm, AgregarProductoForm, PedidoEditForm, PedidoNuevoForm, PerfilForm
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.models import User, Group
 from carneclick.decorators import group_required
 from reportlab.pdfgen import canvas
@@ -630,6 +632,43 @@ def generar_ticket_pdf(producto):
     c.save()
 
     return response
+
+
+@group_required('Encargado')
+def perfil(request):
+    """Vista de configuración de perfil para el encargado: editar usuario/email y cambiar contraseña."""
+    user = request.user
+    if request.method == 'POST':
+        if 'save_profile' in request.POST:
+            perfil_form = PerfilForm(request.POST, instance=user)
+            pwd_form = PasswordChangeForm(user)
+            for f in pwd_form.fields.values():
+                f.widget.attrs.setdefault('class', 'form-control')
+            if perfil_form.is_valid():
+                perfil_form.save()
+                messages.success(request, 'Perfil actualizado correctamente.')
+                return redirect('encargado:perfil')
+        elif 'change_password' in request.POST:
+            perfil_form = PerfilForm(instance=user)
+            pwd_form = PasswordChangeForm(user, request.POST)
+            for f in pwd_form.fields.values():
+                f.widget.attrs.setdefault('class', 'form-control')
+            if pwd_form.is_valid():
+                user = pwd_form.save()
+                update_session_auth_hash(request, user)
+                messages.success(
+                    request, 'Contraseña actualizada correctamente.')
+                return redirect('encargado:perfil')
+    else:
+        perfil_form = PerfilForm(instance=user)
+        pwd_form = PasswordChangeForm(user)
+        for f in pwd_form.fields.values():
+            f.widget.attrs.setdefault('class', 'form-control')
+
+    return render(request, 'html/configuracion/perfil.html', {
+        'perfil_form': perfil_form,
+        'pwd_form': pwd_form,
+    })
 
 
 def finalizar_entrada(request):

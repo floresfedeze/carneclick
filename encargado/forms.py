@@ -1,6 +1,7 @@
 from . import models
 from django.forms import ModelForm
 from django import forms
+from django.contrib.auth.models import User
 
 
 class ProductoForm(ModelForm):
@@ -61,3 +62,13 @@ class AgregarPedidoPendienteForm(forms.Form):
         required=True,
         help_text="Selecciona un pedido preparado para agregarlo al viaje"
     )
+
+
+class PerfilForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['username', 'email']
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+        }

@@ -136,4 +136,5 @@ urlpatterns = [
          name='reporte_vencimientos'),
     path('chart/', views.get_chart, name='get_chart'),
     path('notifications/', views.notifications_json, name='notifications_json'),
+    path('configuracion/perfil/', views.perfil, name='perfil'),
 ]
