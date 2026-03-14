@@ -150,22 +150,14 @@ http://127.0.0.1:8000/admin
 
 
 
-# Tipos de Usuario
+# Tipos de Usuario y Credenciales
 
 ## Administrador
-- Control total del sistema
-- Acceso al panel `/admin`
-
-## Encargado
-- Gestión y actualización de productos.
-- Control y seguimiento del stock.
-
----
+- Usuario: encargado
+- Contraseña: Admin321
 
 ## Cliente
-- Visualización de productos disponibles.
-- Gestión de su información personal.
-
+- Debe registrarse en la pantalla de registro
 
 ---
 
