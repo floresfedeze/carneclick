@@ -176,7 +176,7 @@ def confirmar_pedido(request):
 
     carrito.items.all().delete()
 
-    return redirect("cliente:pedidos_activos")
+    return redirect("cliente:pedidos_pendientes")
 
 
 @login_required
@@ -222,6 +222,60 @@ def pedidos_pendientes_cliente(request):
     return render(request, 'cliente/pedidos_pendientes.html', {
         'pedidos': pedidos
     })
+
+
+@login_required
+def editar_pedido_pendiente(request, pedido_id):
+    """Permite al cliente editar las cantidades de un pedido pendiente propio."""
+    pedido = get_object_or_404(
+        Pedido_cliente, id=pedido_id, cliente=request.user, estado='pendiente')
+    items = list(pedido.items.select_related('corte'))
+
+    if request.method == 'POST':
+        alguno = False
+        for item in items:
+            key = f'cantidad_{item.id}'
+            try:
+                nueva = int(request.POST.get(key, 0))
+            except (ValueError, TypeError):
+                nueva = 0
+            if nueva <= 0:
+                item.delete()
+            else:
+                # stock disponible para ese corte
+                from django.db.models import Sum
+                stock = int(Productos.objects.filter(nombre=item.corte).aggregate(
+                    t=Sum('cantidad'))['t'] or 0)
+                item.cantidad = min(nueva, stock) if stock > 0 else nueva
+                item.save()
+                alguno = True
+
+        if not alguno:
+            pedido.delete()
+            messages.info(
+                request, 'El pedido fue eliminado porque no quedaron ítems.')
+        else:
+            messages.success(
+                request, f'Pedido #{pedido.id} actualizado correctamente.')
+        return redirect('cliente:pedidos_pendientes_cliente')
+
+    # GET: recargar ítems (alguno pudo borrarse, usamos los actuales)
+    items = list(pedido.items.select_related('corte'))
+    return render(request, 'cliente/editar_pedido_pendiente.html', {
+        'pedido': pedido,
+        'items': items,
+    })
+
+
+@login_required
+def eliminar_pedido_pendiente(request, pedido_id):
+    """Elimina un pedido pendiente propio del cliente."""
+    pedido = get_object_or_404(
+        Pedido_cliente, id=pedido_id, cliente=request.user, estado='pendiente')
+    if request.method == 'POST':
+        pedido.delete()
+        messages.success(request, f'Pedido #{pedido_id} eliminado.')
+    return redirect('cliente:pedidos_pendientes_cliente')
 
 
 @login_required

@@ -1,0 +1,101 @@
+{% extends "cliente.html" %}
+{% block title %}Editar pedido #{{ pedido.id }} — CarneClick{% endblock %}
+{% block content %}
+
+<div class="pg-header">
+    <div class="pg-title"><i class="bi bi-pencil-square"></i> Editar pedido <span class="text-muted">#{{ pedido.id }}</span></div>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'cliente:home' %}">Inicio</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'cliente:pedidos_pendientes_cliente' %}">Pedidos pendientes</a></li>
+            <li class="breadcrumb-item active">Editar #{{ pedido.id }}</li>
+        </ol>
+    </nav>
+</div>
+
+{% if messages %}
+<div class="mb-3">
+    {% for msg in messages %}
+    <div class="alert alert-{{ msg.tags }} alert-dismissible fade show" role="alert">
+        {{ msg }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="tbl-card">
+    <div class="tbl-card-head">
+        <span><i class="bi bi-list-ul me-1"></i> Ítems del pedido</span>
+        <small class="text-muted">Modificá las cantidades o ponelas en 0 para eliminar el ítem.</small>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <!-- Desktop -->
+        <div class="d-none d-md-block table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Corte</th>
+                        <th style="width:160px">Cantidad</th>
+                        <th class="text-muted small">0 = eliminar ítem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td class="fw-500">{{ item.corte.nombre }}</td>
+                        <td>
+                            <input type="number"
+                                   name="cantidad_{{ item.id }}"
+                                   value="{{ item.cantidad }}"
+                                   min="0"
+                                   class="form-control form-control-sm"
+                                   style="width:100px">
+                        </td>
+                        <td>
+                            <span class="text-muted small">actual: {{ item.cantidad }}</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="3" class="text-center text-muted">Sin ítems.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Mobile -->
+        <div class="d-md-none p-3">
+            {% for item in items %}
+            <div class="content-card p-3 mb-3">
+                <div class="fw-600 mb-2">{{ item.corte.nombre }}</div>
+                <div class="d-flex align-items-center gap-3">
+                    <label class="text-muted small mb-0">Cantidad:</label>
+                    <input type="number"
+                           name="cantidad_{{ item.id }}"
+                           value="{{ item.cantidad }}"
+                           min="0"
+                           class="form-control form-control-sm"
+                           style="width:90px">
+                    <span class="text-muted small">actual: {{ item.cantidad }}</span>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-muted text-center">Sin ítems.</p>
+            {% endfor %}
+        </div>
+
+        <div class="d-flex gap-2 p-3 pt-0 flex-wrap">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-lg"></i> Guardar cambios
+            </button>
+            <a href="{% url 'cliente:pedidos_pendientes_cliente' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-x-lg"></i> Cancelar
+            </a>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

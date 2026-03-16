@@ -18,6 +18,7 @@
                 <th>Fecha</th>
                 <th>Estado</th>
                 <th>Detalle</th>
+                <th>Acciones</th>
             </tr></thead>
             <tbody>
             {% for p in pedidos %}
@@ -29,6 +30,17 @@
                     {% for item in p.items.all %}
                     <span class="badge bg-light text-dark border me-1">{{ item.corte.nombre }} &times;{{ item.cantidad }}</span>
                     {% endfor %}
+                </td>
+                <td class="d-flex gap-2">
+                    <a href="{% url 'cliente:editar_pedido_pendiente' p.id %}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-pencil"></i> Editar
+                    </a>
+                    <form method="post" action="{% url 'cliente:eliminar_pedido_pendiente' p.id %}" onsubmit="return confirm('\u00bfEliminar el pedido #{{ p.id }}?')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-trash"></i> Eliminar
+                        </button>
+                    </form>
                 </td>
             </tr>
             {% endfor %}
@@ -48,10 +60,21 @@
                     <span class="badge badge-pendiente">Pendiente</span>
                 </div>
                 <div class="small text-muted mb-2">{{ p.fecha|date:"d/m/Y H:i" }}</div>
-                <div class="d-flex flex-wrap gap-1">
+                <div class="d-flex flex-wrap gap-1 mb-3">
                 {% for item in p.items.all %}
                 <span class="badge bg-light text-dark border">{{ item.corte.nombre }} &times;{{ item.cantidad }}</span>
                 {% endfor %}
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'cliente:editar_pedido_pendiente' p.id %}" class="btn btn-sm btn-outline-primary w-50">
+                        <i class="bi bi-pencil"></i> Editar
+                    </a>
+                    <form method="post" action="{% url 'cliente:eliminar_pedido_pendiente' p.id %}" class="w-50" onsubmit="return confirm('\u00bfEliminar el pedido #{{ p.id }}?')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+                            <i class="bi bi-trash"></i> Eliminar
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
