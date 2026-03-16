@@ -16,9 +16,16 @@ def register(request):
     if request.method == 'GET':
         return render(request, 'html/register.html')
 
-    if request.POST['password'] != request.POST['password2']:
+    password = request.POST['password']
+
+    if password != request.POST['password2']:
         return render(request, 'html/register.html', {
             'error': 'No coinciden las contraseñas'
+        })
+
+    if len(password) < 8 or not any(c.isupper() for c in password) or not any(c.isdigit() for c in password):
+        return render(request, 'html/register.html', {
+            'error': 'La contraseña debe tener al menos 8 caracteres, incluido un número y una letra mayúscula.'
         })
 
     try:

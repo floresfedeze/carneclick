@@ -18,13 +18,28 @@
   .section-title .dot { width:10px; height:10px; background:#1abc9c; border-radius:50%; }
   .muted { color: #6c757d; }
   .right-actions { display:flex; gap:.5rem; }
-  .table-footer { display:flex; justify-content: space-between; align-items:center; padding: .75rem 0; }
+  .table-footer { display:flex; justify-content: space-between; align-items:center; flex-wrap:wrap; gap:.5rem; padding: .75rem 0; }
   .pill { background:#f8f9fa; border:1px solid #e9ecef; border-radius:20px; padding:.25rem .6rem; font-size:.85rem; }
   .header-wrap { display:flex; justify-content:space-between; align-items:center; }
   .id-chip { background:#f8f9fa; border:1px solid #e9ecef; border-radius:6px; padding:.2rem .5rem; font-size:.85rem; }
   .subtitle { color:#6c757d; font-size:.9rem; }
   .client-name { font-weight:600; }
   .small { font-size:.85rem; }
+
+  /* ----- MOBILE: info-bar apilada ----- */
+  @media (max-width: 767px) {
+    .info-bar { flex-direction: column; gap:.5rem; }
+    .info-item { min-width: unset; }
+    .table-footer { flex-direction: column; align-items: flex-start; }
+    .right-actions { flex-wrap: wrap; }
+  }
+
+  /* ----- tarjeta producto mobile ----- */
+  .prod-card { border:1px solid #e9ecef; border-radius:8px; padding:.75rem; margin-bottom:.6rem; background:#fff; font-size:.82rem; }
+  .prod-card .prod-title { font-weight:600; font-size:.9rem; margin-bottom:.35rem; }
+  .prod-card .row-info { display:flex; justify-content:space-between; padding:.15rem 0; border-bottom:1px solid #f1f3f5; }
+  .prod-card .row-info:last-child { border-bottom:none; }
+  .prod-card .lbl { color:#6c757d; }
 </style>
 {% endblock %}
 
@@ -62,7 +77,7 @@
     </div>
   </div>
 
-  <table class="table" id="detalleTable">
+  <table class="table d-none d-md-table" id="detalleTable">
     <thead class="table-dark">
       <tr>
         <th>Código</th>
@@ -102,6 +117,31 @@
       {% endfor %}
     </tbody>
   </table>
+
+  <!-- Vista MOBILE: tarjetas -->
+  <div class="d-block d-md-none mt-2">
+    {% for item in detalles %}
+    {% with p=item.producto_id %}
+    <div class="prod-card">
+      <div class="prod-title">{{ p.nombre }} <span class="text-muted" style="font-weight:400;font-size:.8rem;">— #{{ p.id }}</span></div>
+      <div class="row-info"><span class="lbl">Kilos</span><span>{{ p.kilos }} kg</span></div>
+      <div class="row-info"><span class="lbl">Temperatura</span><span>{{ p.temperatura.nombre }}</span></div>
+      <div class="row-info"><span class="lbl">Frigorífico</span><span>{{ p.frigorificop }}</span></div>
+      <div class="row-info"><span class="lbl">Entrada</span><span>{{ p.fecha_entrada.fecha|date:"d/m/Y" }}</span></div>
+      <div class="row-info"><span class="lbl">Vence</span><span>{{ p.fecha_vencimiento|date:"d/m/Y" }}</span></div>
+      <div class="row-info"><span class="lbl">Estado</span>
+        <span>
+          {% if p.estado == 'en stock' %}<span class="badge badge-green">{{ p.estado }}</span>
+          {% elif p.estado == 'preparado' %}<span class="badge badge-blue">{{ p.estado }}</span>
+          {% else %}<span class="badge badge-gray">{{ p.estado }}</span>{% endif %}
+        </span>
+      </div>
+    </div>
+    {% endwith %}
+    {% empty %}
+    <div class="text-center text-muted py-4">No hay productos en este pedido.</div>
+    {% endfor %}
+  </div>
 
   <div class="table-footer">
     <div>

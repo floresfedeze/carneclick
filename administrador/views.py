@@ -195,7 +195,7 @@ def editar_proveedor(request, pk):
     else:
         form = ProveedorForm(instance=proveedor)
 
-    return render(request, 'html/proveedores/editar_proveedores.html', {
+    return render(request, 'html/proveedores/editar_proveedor.html', {
         'form': form,
         'proveedor': proveedor,
     })

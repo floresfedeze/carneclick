@@ -63,16 +63,13 @@ def home(request):
 @group_required('Cliente')
 @group_required('Cliente')
 def nuevo_pedido(request):
-    # Calcular kilos disponibles por corte (kilos - reserved_kilos)
+    # Calcular unidades disponibles por corte
     cortes_qs = Cortes.objects.annotate(
-        total_kilos=Sum('productos__kilos'),
-        total_reserved=Sum('productos__reserved_kilos')
+        total_cantidad=Sum('productos__cantidad')
     )
     cortes = list(cortes_qs)
     for c in cortes:
-        total = float(getattr(c, 'total_kilos', 0) or 0)
-        reserved = float(getattr(c, 'total_reserved', 0) or 0)
-        c.stock = max(0.0, total - reserved)
+        c.stock = int(getattr(c, 'total_cantidad', 0) or 0)
 
     # Asegurar que el template tenga el `carrito` para mostrar la insignia en la navbar
     carrito = None
@@ -98,9 +95,9 @@ def agregar_carrito(request, corte_id):
 
     cantidad = int(request.POST.get("cantidad", 1))
 
-    # stock dinámico (kilos disponibles sumados)
+    # stock dinámico (unidades disponibles)
     agg = Productos.objects.filter(nombre=corte).aggregate(
-        total=Sum(F('kilos') - F('reserved_kilos'), output_field=FloatField())
+        total=Sum('cantidad')
     )
     stock = int(agg.get('total') or 0)
 
